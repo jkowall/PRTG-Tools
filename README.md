@@ -69,6 +69,21 @@ python scan_netsnmp.py 192.168.1.0/24 --timeout 2 --workers 100 --verbose
 | `-v, --verbose` | Show all responding devices, not just vulnerable ones | `false` |
 | `--no-color` | Disable colored output | `false` |
 
+#### ⚠️ Security Note: SNMP Community Strings
+
+SNMP community strings are essentially passwords and should be treated as sensitive credentials:
+
+- **Never hardcode community strings** in scripts or commit them to version control
+- **Avoid using default community strings** like "public" or "private" in production environments—change them to strong, unique values
+- **Use environment variables or secure configuration files** to pass community strings to the scanner
+- **Rotate community strings regularly** as part of your security hygiene practices
+
+Example using an environment variable:
+```bash
+export SNMP_COMMUNITY="your_secure_community_string"
+python scan_netsnmp.py 192.168.1.0/24 --community "$SNMP_COMMUNITY"
+```
+
 #### How It Works
 
 The scanner queries SNMP-enabled devices using OID `1.3.6.1.2.1.1.1.0` (sysDescr) to extract the Net-SNMP version information. Any device running Net-SNMP version earlier than 5.9.5 is flagged as vulnerable to CVE-2025-68615.
