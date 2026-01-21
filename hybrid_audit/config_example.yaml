@@ -1,0 +1,30 @@
+# PRTG Hybrid Audit Tool Configuration (EXAMPLE)
+# Rename this file to config.yaml and edit with your details.
+
+prtg:
+  url: "https://prtg.example.com"
+  api_hash: "YOUR_API_HASH_HERE"
+
+scan:
+  cidr_ranges:
+    - "192.168.1.0/24"
+    - "10.0.0.0/24"
+  scan_ports:
+    - 22    # SSH
+    - 135   # WMI / RPC
+    - 161   # SNMP
+    - 443   # HTTPS
+  timeout: 1.0  # Socket timeout in seconds
+
+credentials:
+  snmp_community: "public"
+  
+  ssh:
+    username: "admin"
+    password: "password123"
+    # key_file: "/path/to/private/key"
+    
+  wmi:
+    domain: "EXAMPLE"
+    username: "Administrator"
+    password: "password123"

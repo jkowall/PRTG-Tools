@@ -8,104 +8,15 @@ This repository provides practical tools designed to help PRTG administrators an
 
 ## Tools
 
-### 1. Net-SNMP Vulnerability Scanner (`scan_netsnmp.py`)
+### 1. [Net-SNMP Vulnerability Scanner](netsnmp_scanner/README.md)
+*Located in `netsnmp_scanner/`*
 
-A Python-based security scanner that identifies devices running vulnerable versions of Net-SNMP affected by CVE-2025-68615 (CVSS 9.8). This critical vulnerability affects the snmptrapd daemon in Net-SNMP versions prior to 5.9.5.
+A Python-based security scanner that identifies devices running vulnerable versions of Net-SNMP affected by CVE-2025-68615 (CVSS 9.8).
 
-#### Features
+### 2. [PRTG Hybrid Audit Tool](hybrid_audit/README.md)
+*Located in `hybrid_audit/`*
 
-- **Fast Parallel Scanning**: Scan entire subnets efficiently with configurable worker threads
-- **CVE-2025-68615 Detection**: Identifies devices vulnerable to the snmptrapd remote code execution vulnerability
-- **Flexible Configuration**: Customize SNMP community strings, timeouts, and retry settings
-- **Comprehensive Reporting**: Color-coded output showing vulnerable, safe, and non-Net-SNMP devices
-- **Multiple Subnet Support**: Scan multiple network ranges in a single execution
-
-#### Installation
-
-1. **Ensure Python 3.7 or later is installed:**
-   ```bash
-   python --version
-   ```
-
-2. **Install required dependencies:**
-   ```bash
-   pip install pysnmp
-   ```
-
-3. **(Optional) Use a virtual environment:**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/macOS
-   # or
-   venv\Scripts\activate     # Windows
-   pip install pysnmp
-   ```
-
-#### Usage
-
-**Basic subnet scan:**
-```bash
-python scan_netsnmp.py 192.168.1.0/24
-```
-
-**Scan multiple subnets with custom community string:**
-```bash
-python scan_netsnmp.py 192.168.1.0/24 10.0.0.0/24 --community mySecretString
-```
-
-**Advanced scan with custom parameters:**
-```bash
-python scan_netsnmp.py 192.168.1.0/24 --timeout 2 --workers 100 --verbose
-```
-
-#### Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-c, --community` | SNMP community string | `public` |
-| `-t, --timeout` | Timeout in seconds per device | `1.0` |
-| `-r, --retries` | Number of retries per device | `1` |
-| `-w, --workers` | Number of parallel workers | `50` |
-| `-v, --verbose` | Show all responding devices, not just vulnerable ones | `false` |
-| `--no-color` | Disable colored output | `false` |
-
-#### ⚠️ Security Note: SNMP Community Strings
-
-SNMP community strings are essentially passwords and should be treated as sensitive credentials:
-
-- **Never hardcode community strings** in scripts or commit them to version control
-- **Avoid using default community strings** like "public" or "private" in production environments—change them to strong, unique values
-- **Use environment variables or secure configuration files** to pass community strings to the scanner
-- **Rotate community strings regularly** as part of your security hygiene practices
-
-Example using an environment variable:
-```bash
-export SNMP_COMMUNITY="your_secure_community_string"
-python scan_netsnmp.py 192.168.1.0/24 --community "$SNMP_COMMUNITY"
-```
-
-#### How It Works
-
-The scanner queries SNMP-enabled devices using OID `1.3.6.1.2.1.1.1.0` (sysDescr) to extract the Net-SNMP version information. Any device running Net-SNMP version earlier than 5.9.5 is flagged as vulnerable to CVE-2025-68615.
-
-#### Security Advisory
-
-**CVE-2025-68615** is a critical remote code execution vulnerability in the Net-SNMP snmptrapd daemon with a CVSS score of 9.8. Affected devices should be:
-
-1. Patched to Net-SNMP version 5.9.5 or later
-2. Have snmptrapd service disabled if patching is not possible
-3. Have UDP port 162 blocked from untrusted networks
-4. Monitored for suspicious activity
-
-**Reference:** [NVD - CVE-2025-68615](https://nvd.nist.gov/vuln/detail/CVE-2025-68615)
-
-#### Integration with PRTG
-
-This tool complements PRTG Network Monitor by:
-- Identifying security vulnerabilities in SNMP-enabled devices already monitored by PRTG
-- Providing security assessment capabilities beyond standard PRTG monitoring
-- Helping prioritize device patching and maintenance activities
-- Enabling proactive security posture management
+A "Hybrid Audit Tool" that combines data from an existing PRTG installation with a fresh network scan to identify unmanaged assets and upsell opportunities.
 
 ## License
 
