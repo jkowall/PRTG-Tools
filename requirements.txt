@@ -1,7 +1,7 @@
 requests
 paramiko
 impacket
-pysnmp<6.0.0
+pysnmp<8.0.0
 pyyaml
 getmac
 mac-vendor-lookup
