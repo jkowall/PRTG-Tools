@@ -9,7 +9,7 @@ Usage:
     python prtg_hybrid_audit.py
 """
 
-__version__ = "1.1.0"
+__version__ = "1.1.2"
 
 import argparse
 import csv
@@ -22,7 +22,6 @@ import concurrent.futures
 import requests
 import subprocess
 import shutil
-from getmac import get_mac_address
 from getmac import get_mac_address
 from mac_vendor_lookup import MacLookup, BaseMacLookup
 
@@ -59,9 +58,9 @@ logger = logging.getLogger(__name__)
 class PRTGClient:
     """Handles interaction with the PRTG Core API."""
     
-    def __init__(self, url, api_hash):
+    def __init__(self, url, apitoken):
         self.url = url.rstrip('/')
-        self.api_hash = api_hash
+        self.apitoken = apitoken
         self.verify_ssl = False  # Usually internal PRTGs use self-signed certs
 
     def fetch_devices(self):
@@ -80,7 +79,7 @@ class PRTGClient:
             "content": "devices",
             "output": "json",
             "columns": "objid,host,device,active,sensor_totals",
-            "passhash": self.api_hash
+            "apitoken": self.apitoken
         }
         
         try:
@@ -461,11 +460,34 @@ class ReconciliationEngine:
     def reconcile(self, prtg_devices, scan_results):
         """
         Matches IPs and generates leads.
+        Resolves FQDN hostnames to IPs for proper matching.
         """
         report_data = []
         
-        # Set of IPs in PRTG
-        prtg_ips = set(prtg_devices.keys())
+        # Build lookup structures - resolve FQDNs to IPs
+        prtg_ips = set()  # IPs registered directly in PRTG
+        prtg_fqdn_to_ip = {}  # Map of FQDN -> resolved IP
+        prtg_ip_to_device = {}  # Map of IP -> PRTG device data (for enrichment)
+        
+        for host_key, device_data in prtg_devices.items():
+            try:
+                # Check if host_key is already an IP
+                ipaddress.ip_address(host_key)
+                prtg_ips.add(host_key)
+                prtg_ip_to_device[host_key] = device_data
+            except ValueError:
+                # It's a hostname/FQDN - try to resolve it
+                resolved_ip = self._resolve_hostname(host_key)
+                if resolved_ip:
+                    prtg_fqdn_to_ip[host_key] = resolved_ip
+                    prtg_ips.add(resolved_ip)
+                    prtg_ip_to_device[resolved_ip] = device_data
+                    logger.debug(f"Resolved FQDN {host_key} -> {resolved_ip}")
+                else:
+                    # Keep the FQDN as-is for reference, won't match scanned IPs
+                    logger.debug(f"Could not resolve FQDN: {host_key}")
+        
+        logger.info(f"PRTG devices: {len(prtg_devices)} total, {len(prtg_ips)} resolved to IPs")
         
         for host in scan_results:
             ip = host['ip']
@@ -478,18 +500,16 @@ class ReconciliationEngine:
                 "OS Version": host.get('os', 'Unknown'),
                 "Sensor Count": "0",
                 "Source": "Active Scan",
-                "Sensor Count": "0",
-                "Source": "Active Scan",
                 "Recommendation": "Investigate",
                 "MAC Address": host.get('mac', '')
             }
             
             if ip in prtg_ips:
-                # Managed
+                # Managed - device found in PRTG (either by IP or resolved FQDN)
                 row["Monitoring Status"] = "Managed"
                 row["Source"] = "PRTG & Scan"
-                # Enrich with PRTG data
-                prtg_data = prtg_devices[ip]
+                # Enrich with PRTG data from our resolved lookup
+                prtg_data = prtg_ip_to_device.get(ip, {})
                 row["Hostname"] = prtg_data.get('device', row['Hostname'])
                 
                 # Parse sensor totals usually in format like "{'upsens': 5, 'downsens': 0, ...}"
@@ -506,6 +526,19 @@ class ReconciliationEngine:
             report_data.append(row)
             
         return report_data
+    
+    def _resolve_hostname(self, hostname):
+        """
+        Resolves a hostname/FQDN to an IP address.
+        Returns None if resolution fails.
+        """
+        try:
+            ip = socket.gethostbyname(hostname)
+            return ip
+        except socket.gaierror:
+            return None
+        except Exception:
+            return None
 
 class Reporter:
     """Generates the CSV report."""
@@ -545,7 +578,7 @@ def main():
         sys.exit(1)
 
     # 1. PRTG Import
-    prtg = PRTGClient(config['prtg']['url'], config['prtg']['api_hash'])
+    prtg = PRTGClient(config['prtg']['url'], config['prtg']['apitoken'])
     prtg_devices = prtg.fetch_devices()
     
     # 2. Active Discovery

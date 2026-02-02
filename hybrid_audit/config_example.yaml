@@ -3,7 +3,7 @@
 
 prtg:
   url: "https://prtg.example.com"
-  api_hash: "YOUR_API_HASH_HERE"
+  apitoken: "YOUR_API_TOKEN_HERE"
 
 scan:
   cidr_ranges:

@@ -12,28 +12,39 @@ A "Hybrid Audit Tool" that combines data from an existing PRTG installation with
 
 ## Installation
 
-1. **Install required dependencies:**
+1. **Create a virtual environment (recommended):**
+
    ```bash
-   pip install -r ../requirements.txt
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
-   *Dependencies include: `requests`, `paramiko`, `impacket`, `pysnmp-lextudio`, `pyyaml`*
+
+2. **Install required dependencies:**
+
+   ```bash
+   python3 -m pip install -r ../requirements.txt
+   ```
+
+   *Dependencies include: `requests`, `paramiko`, `impacket`, `pysnmp`, `pyyaml`, `getmac`, `mac-vendor-lookup`*
 
 ## Usage
 
-1. **Configure**: Edit `config.yaml` with your PRTG details and Scan settings.
-   
+1. **Configure**: Copy `config_example.yaml` to `config.yaml` and edit with your PRTG details and scan settings.
+
    Example `config.yaml`:
+
    ```yaml
    prtg:
      url: "https://your-prtg-server.com"
-     api_hash: "YOUR_PASSHASH"
+     apitoken: "YOUR_API_TOKEN"  # PRTG API token (Setup > Account Settings > My Account)
    scan:
      cidr_ranges: ["192.168.1.0/24"]
    credentials:
      # ... see config_example.yaml
    ```
 
-2. **Run**:
+2. **Run** (make sure your venv is activated):
+
    ```bash
    python prtg_hybrid_audit.py
    ```
@@ -42,5 +53,4 @@ A "Hybrid Audit Tool" that combines data from an existing PRTG installation with
 
 ## Troubleshooting
 
--   **Missing MAC Addresses**: MAC address detection requires **Layer 2 connectivity**. The script must be run on the same physical subnet as the target devices. If you run this from WSL, Docker, or across a router, MAC addresses (and Vendor lookups) will effectively be empty.
-
+- **Missing MAC Addresses**: MAC address detection requires **Layer 2 connectivity**. The script must be run on the same physical subnet as the target devices. If you run this from WSL, Docker, or across a router, MAC addresses (and Vendor lookups) will effectively be empty.
