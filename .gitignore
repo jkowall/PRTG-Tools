@@ -5,3 +5,5 @@ venv/
 .env
 *.csv
 mac-vendors.txt
+.venv/
+.pytest_cache/
