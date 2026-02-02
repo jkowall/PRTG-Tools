@@ -72,13 +72,13 @@ class PRTGClient:
         
         # PRTG API to get devices
         # content=devices
-        # columns=objid,host,device,group,probe,active,sensorcount
+        # columns=objid,host,device,active,totalsens,sensor
         
         endpoint = f"{self.url}/api/table.json"
         params = {
             "content": "devices",
             "output": "json",
-            "columns": "objid,host,device,active,sensor_totals",
+            "columns": "objid,host,device,active,totalsens,sensor",
             "apitoken": self.apitoken
         }
         
@@ -463,29 +463,39 @@ class ReconciliationEngine:
         Resolves FQDN hostnames to IPs for proper matching.
         """
         report_data = []
+        dns_cache = {}
         
-        # Build lookup structures - resolve FQDNs to IPs
+        # Build lookup structures
         prtg_ips = set()  # IPs registered directly in PRTG
-        prtg_fqdn_to_ip = {}  # Map of FQDN -> resolved IP
-        prtg_ip_to_device = {}  # Map of IP -> PRTG device data (for enrichment)
+        prtg_ip_to_device = {}  # Map of IP -> PRTG device data
         
+        # Collect FQDNs to resolve in parallel
+        fqdns_to_resolve = []
         for host_key, device_data in prtg_devices.items():
             try:
-                # Check if host_key is already an IP
                 ipaddress.ip_address(host_key)
                 prtg_ips.add(host_key)
                 prtg_ip_to_device[host_key] = device_data
             except ValueError:
-                # It's a hostname/FQDN - try to resolve it
-                resolved_ip = self._resolve_hostname(host_key)
-                if resolved_ip:
-                    prtg_fqdn_to_ip[host_key] = resolved_ip
-                    prtg_ips.add(resolved_ip)
-                    prtg_ip_to_device[resolved_ip] = device_data
-                    logger.debug(f"Resolved FQDN {host_key} -> {resolved_ip}")
-                else:
-                    # Keep the FQDN as-is for reference, won't match scanned IPs
-                    logger.debug(f"Could not resolve FQDN: {host_key}")
+                fqdns_to_resolve.append(host_key)
+
+        # Batch Parallel DNS Resolution
+        if fqdns_to_resolve:
+            logger.info(f"Resolving {len(fqdns_to_resolve)} PRTG hostnames in parallel...")
+            with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+                # Map FQDN to future
+                future_to_fqdn = {executor.submit(self._resolve_hostname, fqdn): fqdn for fqdn in fqdns_to_resolve}
+                for future in concurrent.futures.as_completed(future_to_fqdn):
+                    fqdn = future_to_fqdn[future]
+                    try:
+                        resolved_ip = future.result()
+                        if resolved_ip:
+                            dns_cache[fqdn] = resolved_ip
+                            prtg_ips.add(resolved_ip)
+                            # Link to device data
+                            prtg_ip_to_device[resolved_ip] = prtg_devices[fqdn]
+                    except Exception as e:
+                        logger.debug(f"Error in future resolution for {fqdn}: {e}")
         
         logger.info(f"PRTG devices: {len(prtg_devices)} total, {len(prtg_ips)} resolved to IPs")
         
@@ -513,8 +523,8 @@ class ReconciliationEngine:
                 row["Hostname"] = prtg_data.get('device', row['Hostname'])
                 
                 # Parse sensor totals usually in format like "{'upsens': 5, 'downsens': 0, ...}"
-                # Or just use sensor_totals raw if complex
-                row["Sensor Count"] = str(prtg_data.get('sensor_totals', ''))
+                # Use 'sensor' for a nice status summary, or fallback to 'totalsens'
+                row["Sensor Count"] = str(prtg_data.get('sensor', prtg_data.get('totalsens', '0')))
                 
                 row["Recommendation"] = "Verify Sensors (Up/Down)"
                 
