@@ -9,14 +9,27 @@ This repository provides practical tools designed to help PRTG administrators an
 ## Tools
 
 ### 1. [Net-SNMP Vulnerability Scanner](netsnmp_scanner/README.md)
+
 *Located in `netsnmp_scanner/`*
 
 A Python-based security scanner that identifies devices running vulnerable versions of Net-SNMP affected by CVE-2025-68615 (CVSS 9.8).
 
 ### 2. [PRTG Hybrid Audit Tool](hybrid_audit/README.md)
+
 *Located in `hybrid_audit/`*
 
 A "Hybrid Audit Tool" that combines data from an existing PRTG installation with a fresh network scan to identify unmanaged assets and upsell opportunities.
+
+## Development
+
+This repository uses automated linting and testing to ensure code quality.
+
+- **Requirements**: Install development dependencies with `pip install -r requirements.txt`.
+- **Tasks**: Use the provided `Makefile` for local development:
+  - `make test`: Run unit tests with `pytest`.
+  - `make lint`: Check for PEP 8 compliance with `flake8`.
+  - `make format`: Auto-format code with `black`.
+- **CI**: GitHub Actions runs these checks on every pull request to the `main` branch.
 
 ## License
 

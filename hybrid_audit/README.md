@@ -7,8 +7,10 @@ A "Hybrid Audit Tool" that combines data from an existing PRTG installation with
 - **PRTG Integration**: Imports current device list from PRTG Core API.
 - **Active Discovery**: Scans CIDR ranges for live hosts using threaded socket checks.
 - **Deep Identification**: Fingerprints devices via SNMP, SSH, and WMI to identify Vendor, Model, and OS.
+- **Parallel DNS Resolution**: Resolves PRTG hostnames in batches using a thread pool for high performance.
 - **Gap Analysis**: Reconciles PRTG data with scan results to find "Unmonitored" devices.
 - **Reporting**: Generates a CSV report with sales recommendations.
+- **Unit Tested**: Includes a comprehensive test suite for API and reconciliation logic.
 
 ## Installation
 
@@ -54,3 +56,13 @@ A "Hybrid Audit Tool" that combines data from an existing PRTG installation with
 ## Troubleshooting
 
 - **Missing MAC Addresses**: MAC address detection requires **Layer 2 connectivity**. The script must be run on the same physical subnet as the target devices. If you run this from WSL, Docker, or across a router, MAC addresses (and Vendor lookups) will effectively be empty.
+
+## Development
+
+A `Makefile` is provided in the root directory for common development tasks.
+
+- **Run Tests**: `make test`
+- **Lint Code**: `make lint`
+- **Format Code**: `make format`
+
+Continuous Integration is set up via GitHub Actions to run these checks on every pull request.
