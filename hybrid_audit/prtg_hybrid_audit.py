@@ -83,14 +83,12 @@ class PRTGClient:
         # content=devices
         # columns=objid,host,device,active,totalsens,sensor
 
-
         endpoint = f"{self.url}/api/table.json"
         params = {
             "content": "devices",
             "output": "json",
             "columns": "objid,host,device,active,totalsens,sensor",
             "apitoken": self.apitoken,
-
         }
 
         try:
@@ -495,7 +493,6 @@ class ReconciliationEngine:
         prtg_ips = set()  # IPs registered directly in PRTG
         prtg_ip_to_device = {}  # Map of IP -> PRTG device data
 
-
         # Collect FQDNs to resolve in parallel
         fqdns_to_resolve = []
         for host_key, device_data in prtg_devices.items():
@@ -534,7 +531,6 @@ class ReconciliationEngine:
             f"PRTG devices: {len(prtg_devices)} total, {len(prtg_ips)} resolved to IPs"
         )
 
-
         for host in scan_results:
             ip = host["ip"]
 
@@ -563,7 +559,6 @@ class ReconciliationEngine:
                 row["Sensor Count"] = str(
                     prtg_data.get("sensor", prtg_data.get("totalsens", "0"))
                 )
-
 
                 row["Recommendation"] = "Verify Sensors (Up/Down)"
 
