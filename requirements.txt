@@ -5,3 +5,9 @@ pysnmp<8.0.0
 pyyaml
 getmac
 mac-vendor-lookup
+
+# Dev dependencies
+flake8
+black
+pytest
+pytest-mock
