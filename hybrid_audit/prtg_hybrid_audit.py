@@ -370,7 +370,6 @@ class NetworkScanner:
             (("watchguard",), "WatchGuard", "Firewall", None),
             (("sophos",), "Sophos", "Firewall/Security", None),
             (("barracuda",), "Barracuda", "Security Appliance", None),
-            (("big-ip",), "F5", "Load Balancer", None),
             # VoIP/Telecom
             (("avaya",), "Avaya", "VoIP/Phone System", None),
             (("mitel",), "Mitel", "VoIP/Phone System", None),
@@ -456,9 +455,6 @@ class NetworkScanner:
              "KVM Switch", "KVM Switch", None),
             # KVM hypervisor needs qemu/libvirt context
             (("kvm",), ("qemu", "libvirt"), "Linux", None, "KVM"),
-            # Pure Storage needs storage context - more specific match
-            (("pure storage",), (), "Pure Storage", "Flash Array", None),
-            (("purestorage",), (), "Pure Storage", "Flash Array", None),
             # IBM storage needs storage context
             (("ibm",), ("storage", "storwize", "flashsystem"), "IBM",
              "Storage System", None),
@@ -476,7 +472,7 @@ class NetworkScanner:
             # Cisco phone needs phone/cp- context (checked before generic Cisco)
             (("cisco",), ("phone", "cp-"), "Cisco", "VoIP Phone", None),
             # AXIS camera - more specific with camera context
-            (("axis",), ("camera", "communications"), 
+            (("axis",), ("camera", "communications"),
              "AXIS", "IP Camera", None),
             # Nokia network equipment - require network context
             (("nokia",), ("router", "switch", "firewall", "ap", "access point",
