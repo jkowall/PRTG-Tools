@@ -9,7 +9,7 @@ Usage:
     python prtg_hybrid_audit.py
 """
 
-__version__ = "1.3.1"
+__version__ = "1.4.0"
 
 import argparse
 import csv
@@ -687,21 +687,23 @@ class ReconciliationEngine:
         """
         Matches IPs and generates leads.
         Resolves FQDN hostnames to IPs for proper matching.
+        Returns one row per PRTG device relationship (exploded format).
         """
         report_data = []
         dns_cache = {}
 
-        # Build lookup structures
-        prtg_ips = set()  # IPs registered directly in PRTG
-        prtg_ip_to_device = {}  # Map of IP -> PRTG device data
+        # Build lookup structures - now tracking MULTIPLE devices per IP
+        prtg_ip_to_devices = {}  # Map of IP -> list of PRTG device data
 
         # Collect FQDNs to resolve in parallel
         fqdns_to_resolve = []
         for host_key, device_data in prtg_devices.items():
             try:
                 ipaddress.ip_address(host_key)
-                prtg_ips.add(host_key)
-                prtg_ip_to_device[host_key] = device_data
+                # Add to list (may have multiple devices per IP)
+                if host_key not in prtg_ip_to_devices:
+                    prtg_ip_to_devices[host_key] = []
+                prtg_ip_to_devices[host_key].append(device_data)
             except ValueError:
                 fqdns_to_resolve.append(host_key)
 
@@ -724,9 +726,10 @@ class ReconciliationEngine:
                         resolved_ip = future.result()
                         if resolved_ip:
                             dns_cache[fqdn] = resolved_ip
-                            prtg_ips.add(resolved_ip)
-                            # Link to device data
-                            prtg_ip_to_device[resolved_ip] = prtg_devices[fqdn]
+                            # Add to list (may have multiple devices per IP)
+                            if resolved_ip not in prtg_ip_to_devices:
+                                prtg_ip_to_devices[resolved_ip] = []
+                            prtg_ip_to_devices[resolved_ip].append(prtg_devices[fqdn])
                         else:
                             # DNS resolution failed for this hostname
                             failed_resolutions.append(fqdn)
@@ -742,54 +745,62 @@ class ReconciliationEngine:
                 f"these devices may appear as 'Unmonitored' even if they exist in PRTG!"
             )
         logger.info(
-            f"PRTG devices: {len(prtg_devices)} total, {len(prtg_ips)} resolved to IPs, "
+            f"PRTG devices: {len(prtg_devices)} total, {len(prtg_ip_to_devices)} unique IPs, "
             f"{len(failed_resolutions)} failed DNS resolution"
         )
 
         for host in scan_results:
             ip = host["ip"]
 
-            row = {
+            # Base row data from scan
+            base_row = {
                 "IP Address": ip,
                 "Hostname": host.get("hostname", ""),
                 "Hardware Vendor": host.get("vendor", "Unknown"),
                 "Hardware Model": host.get("model", "Unknown"),
                 "OS Version": host.get("os", "Unknown"),
-                "Sensor Count": "0",
-                "Source": "Active Scan",
-                "Recommendation": "Investigate",
                 "MAC Address": host.get("mac", ""),
             }
 
-            if ip in prtg_ips:
-                # Managed - device found in PRTG (either by IP or resolved FQDN)
-                row["Monitoring Status"] = "Managed"
-                row["Source"] = "PRTG & Scan"
-                # Enrich with PRTG data from our resolved lookup
-                prtg_data = prtg_ip_to_device.get(ip, {})
-                row["Hostname"] = prtg_data.get("device", row["Hostname"])
+            prtg_device_list = prtg_ip_to_devices.get(ip, [])
 
-                # Parse sensor totals - PRTG API returns values in multiple formats:
-                # - 'sensor': text summary like "5 Sensors (OK: 5)"
-                # - 'totalsens': formatted string or numeric
-                # - 'totalsens_raw': raw numeric value
-                # Check all possible keys to ensure we get the sensor count
-                sensor_count = (
-                    prtg_data.get("sensor")
-                    or prtg_data.get("totalsens")
-                    or prtg_data.get("totalsens_raw")
-                    or "0"
-                )
-                row["Sensor Count"] = str(sensor_count)
+            if prtg_device_list:
+                # Managed - one or more PRTG devices found for this IP
+                # Create one row per PRTG device (exploded format)
+                for idx, prtg_data in enumerate(prtg_device_list):
+                    row = base_row.copy()
+                    row["Monitoring Status"] = "Managed"
+                    row["Source"] = "PRTG & Scan"
 
-                row["Recommendation"] = "Verify Sensors (Up/Down)"
+                    # PRTG device info
+                    row["PRTG Device Name"] = prtg_data.get("device", "")
+                    row["PRTG Device ID"] = str(prtg_data.get("objid", ""))
+                    row["PRTG Device Count"] = str(len(prtg_device_list))
+                    row["Primary Match"] = "Yes" if idx == 0 else "No"
 
+                    # Parse sensor totals
+                    sensor_count = (
+                        prtg_data.get("sensor")
+                        or prtg_data.get("totalsens")
+                        or prtg_data.get("totalsens_raw")
+                        or "0"
+                    )
+                    row["Sensor Count"] = str(sensor_count)
+
+                    row["Recommendation"] = "Verify Sensors (Up/Down)"
+                    report_data.append(row)
             else:
-                # Unmonitored Opportunity
+                # Unmonitored Opportunity - single row
+                row = base_row.copy()
                 row["Monitoring Status"] = "Unmonitored"
+                row["Source"] = "Active Scan"
+                row["PRTG Device Name"] = ""
+                row["PRTG Device ID"] = ""
+                row["PRTG Device Count"] = "0"
+                row["Primary Match"] = ""
+                row["Sensor Count"] = "0"
                 row["Recommendation"] = "ADD TO PRTG - Potential Revenue"
-
-            report_data.append(row)
+                report_data.append(row)
 
         return report_data
 
@@ -824,6 +835,10 @@ class Reporter:
             "Hardware Model",
             "OS Version",
             "Monitoring Status",
+            "PRTG Device Name",
+            "PRTG Device ID",
+            "PRTG Device Count",
+            "Primary Match",
             "Sensor Count",
             "Recommendation",
         ]

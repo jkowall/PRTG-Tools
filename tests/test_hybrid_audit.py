@@ -79,13 +79,17 @@ def test_reconcile_managed_and_unmonitored():
     # Check managed device
     managed = next(r for r in report if r["IP Address"] == "192.168.1.1")
     assert managed["Monitoring Status"] == "Managed"
-    assert "PRTG-Device-1" in managed["Hostname"]
+    assert managed["PRTG Device Name"] == "PRTG-Device-1"
     assert "10 Sensors" in managed["Sensor Count"]
+    assert managed["PRTG Device Count"] == "1"
+    assert managed["Primary Match"] == "Yes"
 
     # Check unmonitored device
     unmonitored = next(r for r in report if r["IP Address"] == "192.168.1.100")
     assert unmonitored["Monitoring Status"] == "Unmonitored"
     assert "ADD TO PRTG" in unmonitored["Recommendation"]
+    assert unmonitored["PRTG Device Name"] == ""
+    assert unmonitored["PRTG Device Count"] == "0"
 
 
 @patch.object(ReconciliationEngine, "_resolve_hostname")
@@ -106,4 +110,5 @@ def test_reconcile_with_dns_resolution(mock_resolve):
     assert len(report) == 1
     assert report[0]["IP Address"] == "192.168.1.5"
     assert report[0]["Monitoring Status"] == "Managed"
-    assert report[0]["Hostname"] == "DNS-Device"
+    assert report[0]["PRTG Device Name"] == "DNS-Device"
+    assert report[0]["Primary Match"] == "Yes"

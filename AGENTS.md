@@ -67,7 +67,14 @@ make verify    # Run both linting and tests
 
 ## Verification Requirements
 
-**Before committing any changes, you MUST run verification:**
+**Always use a virtual environment for running tests and any Python commands:**
+
+```bash
+source .venv/bin/activate  # On macOS/Linux
+# Or: .venv\Scripts\activate  # On Windows
+```
+
+**Before committing any changes, you MUST run verification locally:**
 
 ```bash
 make verify
@@ -75,12 +82,15 @@ make verify
 
 This runs both linting and unit tests. **All checks must pass before committing.**
 
+**Before pushing, you MUST verify tests pass locally.** Do not rely solely on CI to catch failures.
+
 ### Pre-Commit Checklist
 
-1. Run `make format` to auto-format code
-2. Run `make verify` to ensure linting and tests pass
-3. Fix any linting errors or test failures
-4. Only then commit your changes
+1. Activate the virtual environment (`.venv`)
+2. Run `make format` to auto-format code
+3. Run `make verify` to ensure linting and tests pass
+4. Fix any linting errors or test failures
+5. Only then commit your changes
 
 ### Writing Tests
 

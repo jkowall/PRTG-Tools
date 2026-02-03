@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-03
+
+### Added
+
+- **Hybrid Audit**: Exploded CSV format - now outputs one row per PRTG device relationship, enabling better analysis when multiple PRTG devices monitor the same IP.
+- **Hybrid Audit**: New CSV columns: `PRTG Device Name`, `PRTG Device ID`, `PRTG Device Count`, `Primary Match`.
+
+### Changed
+
+- **Hybrid Audit**: Data structure now tracks multiple PRTG devices per IP address (list-based lookup instead of single-device mapping).
+- **Hybrid Audit**: Improved logging to show unique IP count in PRTG reconciliation summary.
+
 ## [1.3.1] - 2026-02-03
 
 ### Fixed
