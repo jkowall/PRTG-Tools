@@ -155,3 +155,50 @@ Use descriptive branch names with prefixes:
 - `fix/` - Bug fixes
 - `docs/` - Documentation updates
 - `refactor/` - Code refactoring
+
+## Documentation Requirements
+
+**All significant changes MUST include documentation updates.**
+
+### CHANGELOG.md
+
+Update `CHANGELOG.md` for:
+
+- **New features**: Any new functionality or capability
+- **Breaking changes**: API changes, configuration changes, removed features
+- **Bug fixes**: Important fixes that users should know about
+- **Security fixes**: Any security-related updates
+- **Version bumps**: When incrementing `__version__` in scripts
+
+Follow the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format:
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+### Added
+- New feature description
+
+### Changed
+- Modified behavior description
+
+### Fixed
+- Bug fix description
+```
+
+### README Updates
+
+Update README files when:
+
+- Adding new dependencies (update installation instructions)
+- Adding new features (update feature list)
+- Changing configuration options (update usage examples)
+- Adding new tools or scripts (add to tools list)
+
+### Pre-Commit Documentation Checklist
+
+Before committing, verify:
+
+1. [ ] CHANGELOG.md updated if adding features, fixes, or breaking changes
+2. [ ] README.md updated if changing dependencies, features, or usage
+3. [ ] Tool-specific README (e.g., `hybrid_audit/README.md`) updated if applicable
+4. [ ] Version number incremented in scripts if functionality changed

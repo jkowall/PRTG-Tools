@@ -7,7 +7,8 @@ A "Hybrid Audit Tool" that combines data from an existing PRTG installation with
 - **PRTG Integration**: Imports current device list from PRTG Core API.
 - **Active Discovery**: Scans CIDR ranges for live hosts using threaded socket checks.
 - **Deep Identification**: Fingerprints devices via SNMP, SSH, and WMI to identify Vendor, Model, and OS.
-- **Parallel DNS Resolution**: Resolves PRTG hostnames in batches using a thread pool for high performance.
+- **Vendor Detection**: Identifies ~80 vendors including enterprise network equipment, industrial controllers, VoIP systems, cameras, storage, and environmental sensors.
+- **Parallel DNS Resolution**: Resolves PRTG hostnames and performs reverse DNS lookups with timeout handling.
 - **Gap Analysis**: Reconciles PRTG data with scan results to find "Unmonitored" devices.
 - **Reporting**: Generates a CSV report with sales recommendations.
 - **Unit Tested**: Includes a comprehensive test suite for API and reconciliation logic.
