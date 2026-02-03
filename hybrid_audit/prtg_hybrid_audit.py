@@ -279,400 +279,8 @@ class NetworkScanner:
 
                 info["os"] = f"SNMP Detected: {sys_descr[:50]}..."
 
-                # Heuristics - expanded vendor detection
-                lower_descr = sys_descr.lower()
-                
-                # Network Equipment
-                if "cisco" in lower_descr:
-                    info["vendor"] = "Cisco"
-                    info["model"] = "Network Device"
-                elif "fortinet" in lower_descr or "fortigate" in lower_descr or "fortiswitch" in lower_descr:
-                    info["vendor"] = "Fortinet"
-                    info["model"] = "Network/Security Device"
-                elif "mikrotik" in lower_descr or "routeros" in lower_descr:
-                    info["vendor"] = "MikroTik"
-                    info["model"] = "Network Device"
-                elif "ubiquiti" in lower_descr or "unifi" in lower_descr or "edgeos" in lower_descr:
-                    info["vendor"] = "Ubiquiti"
-                    info["model"] = "Network Device"
-                elif "aruba" in lower_descr:
-                    info["vendor"] = "HPE Aruba"
-                    info["model"] = "Network Device"
-                elif "juniper" in lower_descr:
-                    info["vendor"] = "Juniper"
-                    info["model"] = "Network Device"
-                elif "palo alto" in lower_descr:
-                    info["vendor"] = "Palo Alto Networks"
-                    info["model"] = "Firewall"
-                elif "moxa" in lower_descr:
-                    info["vendor"] = "Moxa"
-                    info["model"] = "Industrial Network Device"
-                elif "insys" in lower_descr or "icom" in lower_descr:
-                    info["vendor"] = "Insys icom"
-                    info["model"] = "Industrial Router"
-                elif "scalance" in lower_descr:
-                    info["vendor"] = "Siemens SCALANCE"
-                    info["model"] = "Industrial Network Device"
-                elif "hirschmann" in lower_descr:
-                    info["vendor"] = "Hirschmann"
-                    info["model"] = "Industrial Switch"
-                
-                # Storage Systems
-                elif "netapp" in lower_descr or "ontap" in lower_descr or "data ontap" in lower_descr:
-                    info["vendor"] = "NetApp"
-                    info["model"] = "Storage System"
-                    info["os"] = "ONTAP"
-                elif "synology" in lower_descr:
-                    info["vendor"] = "Synology"
-                    info["model"] = "NAS"
-                    info["os"] = "DSM"
-                elif "qnap" in lower_descr:
-                    info["vendor"] = "QNAP"
-                    info["model"] = "NAS"
-                elif "emc" in lower_descr or "isilon" in lower_descr:
-                    info["vendor"] = "Dell EMC"
-                    info["model"] = "Storage System"
-                
-                # Servers
-                elif "windows" in lower_descr:
-                    info["vendor"] = "Microsoft"
-                    info["os"] = "Windows"
-                elif "linux" in lower_descr:
-                    info["vendor"] = "Linux Generic"
-                    info["os"] = "Linux"
-                elif "vmware" in lower_descr or "esxi" in lower_descr:
-                    info["vendor"] = "VMware"
-                    info["os"] = "ESXi"
-                elif "dell" in lower_descr or "poweredge" in lower_descr or "idrac" in lower_descr:
-                    info["vendor"] = "Dell"
-                    info["model"] = "Server"
-                elif "lenovo" in lower_descr or "thinkserver" in lower_descr or "thinksystem" in lower_descr:
-                    info["vendor"] = "Lenovo"
-                    info["model"] = "Server"
-                elif "hpe" in lower_descr or "proliant" in lower_descr or "ilo" in lower_descr:
-                    info["vendor"] = "HPE"
-                    info["model"] = "Server"
-                elif "supermicro" in lower_descr:
-                    info["vendor"] = "Supermicro"
-                    info["model"] = "Server"
-                
-                # Environmental/IoT Sensors
-                elif "kentix" in lower_descr:
-                    info["vendor"] = "Kentix"
-                    info["model"] = "Environmental Sensor"
-                elif "rittal" in lower_descr:
-                    info["vendor"] = "Rittal"
-                    info["model"] = "Environmental/PDU"
-                elif "apc" in lower_descr or "schneider" in lower_descr:
-                    info["vendor"] = "APC/Schneider Electric"
-                    info["model"] = "UPS/PDU"
-                elif "eaton" in lower_descr:
-                    info["vendor"] = "Eaton"
-                    info["model"] = "UPS/PDU"
-                elif "gude" in lower_descr:
-                    info["vendor"] = "Gude"
-                    info["model"] = "PDU/Sensor"
-                elif "raritan" in lower_descr:
-                    info["vendor"] = "Raritan"
-                    info["model"] = "PDU/KVM"
-                elif "vertiv" in lower_descr or "liebert" in lower_descr:
-                    info["vendor"] = "Vertiv"
-                    info["model"] = "Cooling/UPS"
-                
-                # Cameras/Security
-                elif "axis" in lower_descr:
-                    info["vendor"] = "AXIS"
-                    info["model"] = "IP Camera"
-                elif "bosch" in lower_descr and ("camera" in lower_descr or "dinion" in lower_descr):
-                    info["vendor"] = "Bosch"
-                    info["model"] = "IP Camera"
-                elif "hikvision" in lower_descr:
-                    info["vendor"] = "Hikvision"
-                    info["model"] = "IP Camera"
-                elif "dahua" in lower_descr:
-                    info["vendor"] = "Dahua"
-                    info["model"] = "IP Camera"
-                elif "hanwha" in lower_descr or "wisenet" in lower_descr:
-                    info["vendor"] = "Hanwha/Wisenet"
-                    info["model"] = "IP Camera"
-                
-                # Industrial/Automation
-                elif "siemens" in lower_descr or "simatic" in lower_descr:
-                    info["vendor"] = "Siemens"
-                    info["model"] = "Industrial Controller"
-                elif "phoenix" in lower_descr or "plcnext" in lower_descr:
-                    info["vendor"] = "Phoenix Contact"
-                    info["model"] = "Industrial Controller"
-                elif "beckhoff" in lower_descr:
-                    info["vendor"] = "Beckhoff"
-                    info["model"] = "Industrial Controller"
-                elif "rockwell" in lower_descr or "allen-bradley" in lower_descr:
-                    info["vendor"] = "Rockwell/Allen-Bradley"
-                    info["model"] = "Industrial Controller"
-                elif "bender" in lower_descr:
-                    info["vendor"] = "Bender"
-                    info["model"] = "Power Monitoring"
-                elif "wago" in lower_descr:
-                    info["vendor"] = "WAGO"
-                    info["model"] = "Industrial Controller"
-                elif "kvm" in lower_descr:
-                    info["vendor"] = "KVM"
-                    info["model"] = "KVM Switch"
-                
-                # Printers
-                elif "hp" in lower_descr and ("printer" in lower_descr or "laserjet" in lower_descr or "officejet" in lower_descr):
-                    info["vendor"] = "HP"
-                    info["model"] = "Printer"
-                elif "xerox" in lower_descr:
-                    info["vendor"] = "Xerox"
-                    info["model"] = "Printer"
-                elif "canon" in lower_descr and "print" in lower_descr:
-                    info["vendor"] = "Canon"
-                    info["model"] = "Printer"
-                elif "epson" in lower_descr:
-                    info["vendor"] = "Epson"
-                    info["model"] = "Printer"
-                elif "brother" in lower_descr:
-                    info["vendor"] = "Brother"
-                    info["model"] = "Printer"
-                elif "kyocera" in lower_descr:
-                    info["vendor"] = "Kyocera"
-                    info["model"] = "Printer"
-                elif "ricoh" in lower_descr:
-                    info["vendor"] = "Ricoh"
-                    info["model"] = "Printer"
-                elif "konica" in lower_descr or "minolta" in lower_descr:
-                    info["vendor"] = "Konica Minolta"
-                    info["model"] = "Printer"
-                elif "lexmark" in lower_descr:
-                    info["vendor"] = "Lexmark"
-                    info["model"] = "Printer"
-                
-                # Consumer/SMB Network Equipment
-                elif "tp-link" in lower_descr or "tplink" in lower_descr:
-                    info["vendor"] = "TP-Link"
-                    info["model"] = "Network Device"
-                elif "d-link" in lower_descr or "dlink" in lower_descr:
-                    info["vendor"] = "D-Link"
-                    info["model"] = "Network Device"
-                elif "netgear" in lower_descr:
-                    info["vendor"] = "NETGEAR"
-                    info["model"] = "Network Device"
-                elif "zyxel" in lower_descr:
-                    info["vendor"] = "Zyxel"
-                    info["model"] = "Network Device"
-                elif "linksys" in lower_descr:
-                    info["vendor"] = "Linksys"
-                    info["model"] = "Network Device"
-                elif "asus" in lower_descr and ("router" in lower_descr or "switch" in lower_descr):
-                    info["vendor"] = "ASUS"
-                    info["model"] = "Network Device"
-                
-                # Enterprise Network Equipment
-                elif "extreme" in lower_descr:
-                    info["vendor"] = "Extreme Networks"
-                    info["model"] = "Network Device"
-                elif "alcatel" in lower_descr or "nokia" in lower_descr:
-                    info["vendor"] = "Alcatel-Lucent/Nokia"
-                    info["model"] = "Network Device"
-                elif "brocade" in lower_descr:
-                    info["vendor"] = "Brocade"
-                    info["model"] = "Network/Storage Switch"
-                elif "ruckus" in lower_descr:
-                    info["vendor"] = "Ruckus"
-                    info["model"] = "Wireless AP"
-                elif "aerohive" in lower_descr:
-                    info["vendor"] = "Aerohive"
-                    info["model"] = "Wireless AP"
-                elif "meraki" in lower_descr:
-                    info["vendor"] = "Cisco Meraki"
-                    info["model"] = "Network Device"
-                elif "sonicwall" in lower_descr:
-                    info["vendor"] = "SonicWall"
-                    info["model"] = "Firewall"
-                elif "watchguard" in lower_descr:
-                    info["vendor"] = "WatchGuard"
-                    info["model"] = "Firewall"
-                elif "sophos" in lower_descr:
-                    info["vendor"] = "Sophos"
-                    info["model"] = "Firewall/Security"
-                elif "barracuda" in lower_descr:
-                    info["vendor"] = "Barracuda"
-                    info["model"] = "Security Appliance"
-                elif "f5" in lower_descr or "big-ip" in lower_descr:
-                    info["vendor"] = "F5"
-                    info["model"] = "Load Balancer"
-                elif "citrix" in lower_descr and ("netscaler" in lower_descr or "adc" in lower_descr):
-                    info["vendor"] = "Citrix"
-                    info["model"] = "Load Balancer"
-                elif "a10" in lower_descr:
-                    info["vendor"] = "A10 Networks"
-                    info["model"] = "Load Balancer"
-                
-                # VoIP/Telecom
-                elif "avaya" in lower_descr:
-                    info["vendor"] = "Avaya"
-                    info["model"] = "VoIP/Phone System"
-                elif "mitel" in lower_descr:
-                    info["vendor"] = "Mitel"
-                    info["model"] = "VoIP/Phone System"
-                elif "polycom" in lower_descr or "poly" in lower_descr:
-                    info["vendor"] = "Polycom/Poly"
-                    info["model"] = "VoIP Phone/Conference"
-                elif "yealink" in lower_descr:
-                    info["vendor"] = "Yealink"
-                    info["model"] = "VoIP Phone"
-                elif "grandstream" in lower_descr:
-                    info["vendor"] = "Grandstream"
-                    info["model"] = "VoIP Phone"
-                elif "snom" in lower_descr:
-                    info["vendor"] = "Snom"
-                    info["model"] = "VoIP Phone"
-                elif "cisco" in lower_descr and ("phone" in lower_descr or "cp-" in lower_descr):
-                    info["vendor"] = "Cisco"
-                    info["model"] = "VoIP Phone"
-                elif "audiocodes" in lower_descr:
-                    info["vendor"] = "AudioCodes"
-                    info["model"] = "VoIP Gateway"
-                elif "asterisk" in lower_descr or "freepbx" in lower_descr:
-                    info["vendor"] = "Asterisk/FreePBX"
-                    info["model"] = "PBX Server"
-                
-                # More Storage
-                elif "pure" in lower_descr and "storage" in lower_descr:
-                    info["vendor"] = "Pure Storage"
-                    info["model"] = "Flash Array"
-                elif "nimble" in lower_descr:
-                    info["vendor"] = "HPE Nimble"
-                    info["model"] = "Storage"
-                elif "3par" in lower_descr:
-                    info["vendor"] = "HPE 3PAR"
-                    info["model"] = "Storage"
-                elif "ibm" in lower_descr and ("storage" in lower_descr or "storwize" in lower_descr or "flashsystem" in lower_descr):
-                    info["vendor"] = "IBM"
-                    info["model"] = "Storage System"
-                elif "hitachi" in lower_descr:
-                    info["vendor"] = "Hitachi"
-                    info["model"] = "Storage System"
-                elif "buffalo" in lower_descr:
-                    info["vendor"] = "Buffalo"
-                    info["model"] = "NAS"
-                elif "drobo" in lower_descr:
-                    info["vendor"] = "Drobo"
-                    info["model"] = "NAS"
-                elif "asustor" in lower_descr:
-                    info["vendor"] = "Asustor"
-                    info["model"] = "NAS"
-                elif "terramaster" in lower_descr:
-                    info["vendor"] = "TerraMaster"
-                    info["model"] = "NAS"
-                
-                # More Cameras
-                elif "vivotek" in lower_descr:
-                    info["vendor"] = "Vivotek"
-                    info["model"] = "IP Camera"
-                elif "mobotix" in lower_descr:
-                    info["vendor"] = "Mobotix"
-                    info["model"] = "IP Camera"
-                elif "pelco" in lower_descr:
-                    info["vendor"] = "Pelco"
-                    info["model"] = "IP Camera"
-                elif "uniview" in lower_descr:
-                    info["vendor"] = "Uniview"
-                    info["model"] = "IP Camera"
-                elif "geovision" in lower_descr:
-                    info["vendor"] = "GeoVision"
-                    info["model"] = "IP Camera"
-                elif "foscam" in lower_descr:
-                    info["vendor"] = "Foscam"
-                    info["model"] = "IP Camera"
-                elif "reolink" in lower_descr:
-                    info["vendor"] = "Reolink"
-                    info["model"] = "IP Camera"
-                elif "amcrest" in lower_descr:
-                    info["vendor"] = "Amcrest"
-                    info["model"] = "IP Camera"
-                
-                # More Environmental/Power
-                elif "geist" in lower_descr:
-                    info["vendor"] = "Geist"
-                    info["model"] = "PDU/Environmental"
-                elif "servertech" in lower_descr or "server technology" in lower_descr:
-                    info["vendor"] = "Server Technology"
-                    info["model"] = "PDU"
-                elif "cyberpower" in lower_descr:
-                    info["vendor"] = "CyberPower"
-                    info["model"] = "UPS/PDU"
-                elif "tripp" in lower_descr or "tripplite" in lower_descr:
-                    info["vendor"] = "Tripp Lite"
-                    info["model"] = "UPS/PDU"
-                elif "paessler" in lower_descr or "prtg" in lower_descr:
-                    info["vendor"] = "Paessler"
-                    info["model"] = "PRTG Probe"
-                elif "digi" in lower_descr:
-                    info["vendor"] = "Digi International"
-                    info["model"] = "Serial/IoT Gateway"
-                elif "advantech" in lower_descr:
-                    info["vendor"] = "Advantech"
-                    info["model"] = "Industrial IoT"
-                
-                # Virtualization/Hypervisors
-                elif "proxmox" in lower_descr:
-                    info["vendor"] = "Proxmox"
-                    info["os"] = "Proxmox VE"
-                elif "xen" in lower_descr and "server" in lower_descr:
-                    info["vendor"] = "Citrix"
-                    info["os"] = "XenServer"
-                elif "nutanix" in lower_descr:
-                    info["vendor"] = "Nutanix"
-                    info["model"] = "HCI"
-                elif "hyper-v" in lower_descr:
-                    info["vendor"] = "Microsoft"
-                    info["os"] = "Hyper-V"
-                elif "kvm" in lower_descr and ("qemu" in lower_descr or "libvirt" in lower_descr):
-                    info["vendor"] = "Linux"
-                    info["os"] = "KVM"
-                
-                # More Industrial/Automation
-                elif "abb" in lower_descr:
-                    info["vendor"] = "ABB"
-                    info["model"] = "Industrial Controller"
-                elif "omron" in lower_descr:
-                    info["vendor"] = "Omron"
-                    info["model"] = "Industrial Controller"
-                elif "emerson" in lower_descr:
-                    info["vendor"] = "Emerson"
-                    info["model"] = "Industrial Controller"
-                elif "honeywell" in lower_descr:
-                    info["vendor"] = "Honeywell"
-                    info["model"] = "Industrial/Building"
-                elif "schneider" in lower_descr and ("modicon" in lower_descr or "plc" in lower_descr):
-                    info["vendor"] = "Schneider Electric"
-                    info["model"] = "Industrial Controller"
-                elif "mitsubishi" in lower_descr and ("plc" in lower_descr or "melsec" in lower_descr):
-                    info["vendor"] = "Mitsubishi"
-                    info["model"] = "Industrial Controller"
-                elif "keyence" in lower_descr:
-                    info["vendor"] = "Keyence"
-                    info["model"] = "Industrial Sensor/Controller"
-                elif "ifm" in lower_descr:
-                    info["vendor"] = "IFM"
-                    info["model"] = "Industrial Sensor"
-                elif "pepperl" in lower_descr or "fuchs" in lower_descr:
-                    info["vendor"] = "Pepperl+Fuchs"
-                    info["model"] = "Industrial Sensor"
-                elif "sick" in lower_descr and ("sensor" in lower_descr or "scanner" in lower_descr):
-                    info["vendor"] = "SICK"
-                    info["model"] = "Industrial Sensor"
-                elif "balluff" in lower_descr:
-                    info["vendor"] = "Balluff"
-                    info["model"] = "Industrial Sensor"
-                elif "turck" in lower_descr:
-                    info["vendor"] = "Turck"
-                    info["model"] = "Industrial Sensor"
-                elif "banner" in lower_descr and "engineering" in lower_descr:
-                    info["vendor"] = "Banner Engineering"
-                    info["model"] = "Industrial Sensor"
+                # Use data-driven vendor detection
+                self._identify_vendor_from_snmp(sys_descr, info)
 
                 logger.info(
                     f"SNMP Identification for {ip}: {info['vendor']} - {info['os']}"
@@ -681,6 +289,200 @@ class NetworkScanner:
         except Exception:
             # logger.debug(f"SNMP probe failed for {ip}: {e}")
             pass
+
+    def _identify_vendor_from_snmp(self, sys_descr, info):
+        """
+        Identify vendor/model/os from SNMP sysDescr using pattern matching.
+        Uses a data-driven approach to reduce complexity.
+        """
+        lower_descr = sys_descr.lower()
+
+        # Pattern definitions: (keywords, vendor, model, os_override)
+        # keywords can be a string or tuple of strings (any match)
+        # model and os_override can be None to skip setting
+        vendor_patterns = [
+            # Network Equipment
+            (("cisco",), "Cisco", "Network Device", None),
+            (("fortinet", "fortigate", "fortiswitch"), "Fortinet",
+             "Network/Security Device", None),
+            (("mikrotik", "routeros"), "MikroTik", "Network Device", None),
+            (("ubiquiti", "unifi", "edgeos"), "Ubiquiti", "Network Device", None),
+            (("aruba",), "HPE Aruba", "Network Device", None),
+            (("juniper",), "Juniper", "Network Device", None),
+            (("palo alto",), "Palo Alto Networks", "Firewall", None),
+            (("moxa",), "Moxa", "Industrial Network Device", None),
+            (("insys", "icom"), "Insys icom", "Industrial Router", None),
+            (("scalance",), "Siemens SCALANCE", "Industrial Network Device", None),
+            (("hirschmann",), "Hirschmann", "Industrial Switch", None),
+            # Storage Systems
+            (("netapp", "ontap", "data ontap"), "NetApp", "Storage System", "ONTAP"),
+            (("synology",), "Synology", "NAS", "DSM"),
+            (("qnap",), "QNAP", "NAS", None),
+            (("emc", "isilon"), "Dell EMC", "Storage System", None),
+            # Servers/OS
+            (("windows",), "Microsoft", None, "Windows"),
+            (("linux",), "Linux Generic", None, "Linux"),
+            (("vmware", "esxi"), "VMware", None, "ESXi"),
+            (("dell", "poweredge", "idrac"), "Dell", "Server", None),
+            (("lenovo", "thinkserver", "thinksystem"), "Lenovo", "Server", None),
+            (("hpe", "proliant", "ilo"), "HPE", "Server", None),
+            (("supermicro",), "Supermicro", "Server", None),
+            # Environmental/IoT Sensors
+            (("kentix",), "Kentix", "Environmental Sensor", None),
+            (("rittal",), "Rittal", "Environmental/PDU", None),
+            (("apc", "schneider"), "APC/Schneider Electric", "UPS/PDU", None),
+            (("eaton",), "Eaton", "UPS/PDU", None),
+            (("gude",), "Gude", "PDU/Sensor", None),
+            (("raritan",), "Raritan", "PDU/KVM", None),
+            (("vertiv", "liebert"), "Vertiv", "Cooling/UPS", None),
+            # Cameras/Security
+            (("axis",), "AXIS", "IP Camera", None),
+            (("hikvision",), "Hikvision", "IP Camera", None),
+            (("dahua",), "Dahua", "IP Camera", None),
+            (("hanwha", "wisenet"), "Hanwha/Wisenet", "IP Camera", None),
+            # Industrial/Automation
+            (("siemens", "simatic"), "Siemens", "Industrial Controller", None),
+            (("phoenix", "plcnext"), "Phoenix Contact", "Industrial Controller", None),
+            (("beckhoff",), "Beckhoff", "Industrial Controller", None),
+            (("rockwell", "allen-bradley"), "Rockwell/Allen-Bradley",
+             "Industrial Controller", None),
+            (("bender",), "Bender", "Power Monitoring", None),
+            (("wago",), "WAGO", "Industrial Controller", None),
+            # Printers
+            (("xerox",), "Xerox", "Printer", None),
+            (("epson",), "Epson", "Printer", None),
+            (("brother",), "Brother", "Printer", None),
+            (("kyocera",), "Kyocera", "Printer", None),
+            (("ricoh",), "Ricoh", "Printer", None),
+            (("lexmark",), "Lexmark", "Printer", None),
+            # Consumer/SMB Network Equipment
+            (("tp-link", "tplink"), "TP-Link", "Network Device", None),
+            (("d-link", "dlink"), "D-Link", "Network Device", None),
+            (("netgear",), "NETGEAR", "Network Device", None),
+            (("zyxel",), "Zyxel", "Network Device", None),
+            (("linksys",), "Linksys", "Network Device", None),
+            # Enterprise Network Equipment
+            (("extreme",), "Extreme Networks", "Network Device", None),
+            (("alcatel", "nokia"), "Alcatel-Lucent/Nokia", "Network Device", None),
+            (("brocade",), "Brocade", "Network/Storage Switch", None),
+            (("ruckus",), "Ruckus", "Wireless AP", None),
+            (("aerohive",), "Aerohive", "Wireless AP", None),
+            (("meraki",), "Cisco Meraki", "Network Device", None),
+            (("sonicwall",), "SonicWall", "Firewall", None),
+            (("watchguard",), "WatchGuard", "Firewall", None),
+            (("sophos",), "Sophos", "Firewall/Security", None),
+            (("barracuda",), "Barracuda", "Security Appliance", None),
+            (("f5", "big-ip"), "F5", "Load Balancer", None),
+            (("a10",), "A10 Networks", "Load Balancer", None),
+            # VoIP/Telecom
+            (("avaya",), "Avaya", "VoIP/Phone System", None),
+            (("mitel",), "Mitel", "VoIP/Phone System", None),
+            (("polycom", "poly"), "Polycom/Poly", "VoIP Phone/Conference", None),
+            (("yealink",), "Yealink", "VoIP Phone", None),
+            (("grandstream",), "Grandstream", "VoIP Phone", None),
+            (("snom",), "Snom", "VoIP Phone", None),
+            (("audiocodes",), "AudioCodes", "VoIP Gateway", None),
+            (("asterisk", "freepbx"), "Asterisk/FreePBX", "PBX Server", None),
+            # More Storage
+            (("nimble",), "HPE Nimble", "Storage", None),
+            (("3par",), "HPE 3PAR", "Storage", None),
+            (("hitachi",), "Hitachi", "Storage System", None),
+            (("buffalo",), "Buffalo", "NAS", None),
+            (("drobo",), "Drobo", "NAS", None),
+            (("asustor",), "Asustor", "NAS", None),
+            (("terramaster",), "TerraMaster", "NAS", None),
+            # More Cameras
+            (("vivotek",), "Vivotek", "IP Camera", None),
+            (("mobotix",), "Mobotix", "IP Camera", None),
+            (("pelco",), "Pelco", "IP Camera", None),
+            (("uniview",), "Uniview", "IP Camera", None),
+            (("geovision",), "GeoVision", "IP Camera", None),
+            (("foscam",), "Foscam", "IP Camera", None),
+            (("reolink",), "Reolink", "IP Camera", None),
+            (("amcrest",), "Amcrest", "IP Camera", None),
+            # More Environmental/Power
+            (("geist",), "Geist", "PDU/Environmental", None),
+            (("servertech", "server technology"), "Server Technology", "PDU", None),
+            (("cyberpower",), "CyberPower", "UPS/PDU", None),
+            (("tripp", "tripplite"), "Tripp Lite", "UPS/PDU", None),
+            (("paessler", "prtg"), "Paessler", "PRTG Probe", None),
+            (("digi",), "Digi International", "Serial/IoT Gateway", None),
+            (("advantech",), "Advantech", "Industrial IoT", None),
+            # Virtualization/Hypervisors
+            (("proxmox",), "Proxmox", None, "Proxmox VE"),
+            (("nutanix",), "Nutanix", "HCI", None),
+            (("hyper-v",), "Microsoft", None, "Hyper-V"),
+            # More Industrial/Automation
+            (("abb",), "ABB", "Industrial Controller", None),
+            (("omron",), "Omron", "Industrial Controller", None),
+            (("emerson",), "Emerson", "Industrial Controller", None),
+            (("honeywell",), "Honeywell", "Industrial/Building", None),
+            (("keyence",), "Keyence", "Industrial Sensor/Controller", None),
+            (("ifm",), "IFM", "Industrial Sensor", None),
+            (("pepperl", "fuchs"), "Pepperl+Fuchs", "Industrial Sensor", None),
+            (("balluff",), "Balluff", "Industrial Sensor", None),
+            (("turck",), "Turck", "Industrial Sensor", None),
+        ]
+
+        # Patterns requiring additional context checks
+        special_patterns = [
+            # Bosch camera needs camera/dinion context
+            (("bosch",), ("camera", "dinion"), "Bosch", "IP Camera", None),
+            # HP printer needs printer context
+            (("hp",), ("printer", "laserjet", "officejet"), "HP", "Printer", None),
+            # Canon printer needs print context
+            (("canon",), ("print",), "Canon", "Printer", None),
+            # ASUS network needs router/switch context
+            (("asus",), ("router", "switch"), "ASUS", "Network Device", None),
+            # Citrix ADC needs netscaler/adc context
+            (("citrix",), ("netscaler", "adc"), "Citrix", "Load Balancer", None),
+            # XenServer needs server context
+            (("xen",), ("server",), "Citrix", None, "XenServer"),
+            # KVM needs qemu/libvirt context
+            (("kvm",), ("qemu", "libvirt"), "Linux", None, "KVM"),
+            # Pure Storage needs storage context
+            (("pure",), ("storage",), "Pure Storage", "Flash Array", None),
+            # IBM storage needs storage context
+            (("ibm",), ("storage", "storwize", "flashsystem"), "IBM",
+             "Storage System", None),
+            # Schneider PLC needs modicon/plc context
+            (("schneider",), ("modicon", "plc"), "Schneider Electric",
+             "Industrial Controller", None),
+            # Mitsubishi PLC needs plc/melsec context
+            (("mitsubishi",), ("plc", "melsec"), "Mitsubishi",
+             "Industrial Controller", None),
+            # SICK sensor needs sensor/scanner context
+            (("sick",), ("sensor", "scanner"), "SICK", "Industrial Sensor", None),
+            # Banner sensor needs engineering context
+            (("banner",), ("engineering",), "Banner Engineering",
+             "Industrial Sensor", None),
+            # Konica Minolta
+            (("konica", "minolta"), (), "Konica Minolta", "Printer", None),
+            # Cisco phone needs phone/cp- context
+            (("cisco",), ("phone", "cp-"), "Cisco", "VoIP Phone", None),
+        ]
+
+        # Check simple patterns first
+        for keywords, vendor, model, os_override in vendor_patterns:
+            if any(kw in lower_descr for kw in keywords):
+                info["vendor"] = vendor
+                if model:
+                    info["model"] = model
+                if os_override:
+                    info["os"] = os_override
+                return
+
+        # Check patterns requiring additional context
+        for primary_kw, context_kw, vendor, model, os_override in special_patterns:
+            if any(pk in lower_descr for pk in primary_kw):
+                # Empty context means just primary match is enough
+                if not context_kw or any(ck in lower_descr for ck in context_kw):
+                    info["vendor"] = vendor
+                    if model:
+                        info["model"] = model
+                    if os_override:
+                        info["os"] = os_override
+                    return
 
     def _probe_ssh(self, ip, info):
         """Query via SSH."""
