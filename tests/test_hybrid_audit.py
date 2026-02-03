@@ -68,8 +68,8 @@ def test_reconcile_managed_and_unmonitored():
 
     # Mock Scan results
     scan_results = [
-        {"ip": "192.168.1.1", "vendor": "Cisco", "os": "IOS"},
-        {"ip": "192.168.1.100", "vendor": "Unknown", "os": "Unknown"},
+        {"ip": "192.168.1.1", "vendor": "Cisco", "os": "IOS", "hostname": "router1.local"},
+        {"ip": "192.168.1.100", "vendor": "Unknown", "os": "Unknown", "hostname": ""},
     ]
 
     report = engine.reconcile(prtg_devices, scan_results)
@@ -99,7 +99,7 @@ def test_reconcile_with_dns_resolution(mock_resolve):
         "test.local": {"device": "DNS-Device", "totalsens": 3, "sensor": "3 Sensors"}
     }
 
-    scan_results = [{"ip": "192.168.1.5", "vendor": "Dell", "os": "Linux"}]
+    scan_results = [{"ip": "192.168.1.5", "vendor": "Dell", "os": "Linux", "hostname": "server.local"}]
 
     report = engine.reconcile(prtg_devices, scan_results)
 
