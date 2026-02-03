@@ -329,6 +329,7 @@ class NetworkScanner:
             # Environmental/IoT Sensors
             (("kentix",), "Kentix", "Environmental Sensor", None),
             (("rittal",), "Rittal", "Environmental/PDU", None),
+            (("apc",), "APC/Schneider Electric", "UPS/PDU", None),
             (("eaton",), "Eaton", "UPS/PDU", None),
             (("gude",), "Gude", "PDU/Sensor", None),
             (("raritan",), "Raritan", "PDU/KVM", None),
@@ -360,6 +361,7 @@ class NetworkScanner:
             (("linksys",), "Linksys", "Network Device", None),
             # Enterprise Network Equipment
             (("alcatel", "lucent"), "Alcatel-Lucent/Nokia", "Network Device", None),
+            (("extreme networks",), "Extreme Networks", "Network Device", None),
             (("brocade",), "Brocade", "Network/Storage Switch", None),
             (("ruckus",), "Ruckus", "Wireless AP", None),
             (("aerohive",), "Aerohive", "Wireless AP", None),
@@ -378,9 +380,18 @@ class NetworkScanner:
             (("snom",), "Snom", "VoIP Phone", None),
             (("audiocodes",), "AudioCodes", "VoIP Gateway", None),
             (("asterisk", "freepbx"), "Asterisk/FreePBX", "PBX Server", None),
+            # Load Balancers - specific patterns
+            (("big-ip",), "F5", "Load Balancer", None),
+            (("f5 ",), "F5", "Load Balancer", None),
+            (("f5-",), "F5", "Load Balancer", None),
+            (("a10 networks",), "A10 Networks", "Load Balancer", None),
+            (("a10 ",), "A10 Networks", "Load Balancer", None),
+            (("a10-",), "A10 Networks", "Load Balancer", None),
             # More Storage
             (("nimble",), "HPE Nimble", "Storage", None),
             (("3par",), "HPE 3PAR", "Storage", None),
+            (("pure storage",), "Pure Storage", "Flash Array", None),
+            (("purestorage",), "Pure Storage", "Flash Array", None),
             (("hitachi",), "Hitachi", "Storage System", None),
             (("buffalo",), "Buffalo", "NAS", None),
             (("drobo",), "Drobo", "NAS", None),
@@ -402,6 +413,7 @@ class NetworkScanner:
             (("tripp", "tripplite"), "Tripp Lite", "UPS/PDU", None),
             (("paessler", "prtg"), "Paessler", "PRTG Probe", None),
             (("digi international",), "Digi International", "Serial/IoT Gateway", None),
+            ((" digi ",), "Digi International", "Serial/IoT Gateway", None),
             (("advantech",), "Advantech", "Industrial IoT", None),
             # Virtualization/Hypervisors
             (("proxmox",), "Proxmox", None, "Proxmox VE"),
@@ -415,6 +427,7 @@ class NetworkScanner:
             (("pepperl", "fuchs"), "Pepperl+Fuchs", "Industrial Sensor", None),
             (("balluff",), "Balluff", "Industrial Sensor", None),
             (("turck",), "Turck", "Industrial Sensor", None),
+            (("banner engineering",), "Banner Engineering", "Industrial Sensor", None),
             # Generic Cisco must come after more specific Cisco patterns
             (("cisco",), "Cisco", "Network Device", None),
             # Generic Siemens must come after SCALANCE and SIMATIC
@@ -449,30 +462,22 @@ class NetworkScanner:
             # IBM storage needs storage context
             (("ibm",), ("storage", "storwize", "flashsystem"), "IBM",
              "Storage System", None),
-            # APC/Schneider UPS - exclude PLCs
-            (("apc",), (), "APC/Schneider Electric", "UPS/PDU", None),
+            # Schneider PLC needs modicon/plc context (checked before generic Schneider/APC)
             (("schneider",), ("modicon", "plc"), "Schneider Electric",
              "Industrial Controller", None),
-            # Generic Schneider without PLC context (for UPS)
-            (("schneider",), (), "APC/Schneider Electric", "UPS/PDU", None),
             # Mitsubishi PLC needs plc/melsec context
             (("mitsubishi",), ("plc", "melsec"), "Mitsubishi",
              "Industrial Controller", None),
             # SICK sensor needs sensor/scanner context + specific SICK identifiers
             (("sick",), ("sensor", "scanner", "sick ag", "lms", "tim", "mrs"),
              "SICK", "Industrial Sensor", None),
-            # Banner Engineering sensor
-            (("banner engineering",), (), "Banner Engineering",
-             "Industrial Sensor", None),
             # Konica Minolta
             (("konica", "minolta"), (), "Konica Minolta", "Printer", None),
             # Cisco phone needs phone/cp- context (checked before generic Cisco)
             (("cisco",), ("phone", "cp-"), "Cisco", "VoIP Phone", None),
-            # AXIS camera - more specific with word boundaries or camera context
-            (("axis",), ("camera", "communications", "axis communications"), 
+            # AXIS camera - more specific with camera context
+            (("axis",), ("camera", "communications"), 
              "AXIS", "IP Camera", None),
-            # Extreme Networks - require "networks" or space after "extreme"
-            (("extreme networks",), (), "Extreme Networks", "Network Device", None),
             # Nokia network equipment - require network context
             (("nokia",), ("router", "switch", "firewall", "ap", "access point",
                          "wifi", "lan", "wan", "ethernet", "network"),
@@ -480,22 +485,12 @@ class NetworkScanner:
             # Poly VoIP - require phone/conference context
             (("poly",), ("phone", "conference"), "Polycom/Poly",
              "VoIP Phone/Conference", None),
-            # F5 - more specific pattern with word boundary awareness
-            (("f5 ",), (), "F5", "Load Balancer", None),
-            (("f5-",), (), "F5", "Load Balancer", None),
-            # A10 Networks - more specific with networks or word boundary
-            (("a10 networks",), (), "A10 Networks", "Load Balancer", None),
-            (("a10 ",), (), "A10 Networks", "Load Balancer", None),
-            (("a10-",), (), "A10 Networks", "Load Balancer", None),
             # ABB industrial - require controller/automation context
             (("abb",), ("controller", "automation", "drive", "plc", "hmi"),
              "ABB", "Industrial Controller", None),
             # IFM sensor - require sensor context
             (("ifm",), ("sensor", "io-link", "automation"), "IFM",
              "Industrial Sensor", None),
-            # Digi International - more specific patterns
-            ((" digi ",), (), "Digi International", "Serial/IoT Gateway", None),
-            (("digi ",), (), "Digi International", "Serial/IoT Gateway", None),
         ]
 
         # Check patterns requiring additional context FIRST (more specific)
