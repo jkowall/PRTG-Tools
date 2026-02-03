@@ -232,8 +232,19 @@ class NetworkScanner:
         if 135 in open_ports and info["os"] == "Unknown":
             self._probe_wmi(ip, info)
 
-        logger.info(f"Found {ip} -> OS: {info['os']}, Vendor: {info['vendor']}")
+        # Reverse DNS Lookup
+        info["hostname"] = self._get_hostname(ip)
+
+        logger.info(f"Found {ip} -> Hostname: {info['hostname']}, OS: {info['os']}, Vendor: {info['vendor']}")
         return info
+
+    def _get_hostname(self, ip):
+        """Resolves IP to hostname via Reverse DNS."""
+        try:
+            hostname, _, _ = socket.gethostbyaddr(ip)
+            return hostname
+        except Exception:
+            return ""
 
     def _probe_snmp(self, ip, info):
         """Query SNMP sysDescr."""
