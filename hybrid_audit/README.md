@@ -9,9 +9,29 @@ A "Hybrid Audit Tool" that combines data from an existing PRTG installation with
 - **Deep Identification**: Fingerprints devices via SNMP, SSH, and WMI to identify Vendor, Model, and OS.
 - **Vendor Detection**: Identifies ~80 vendors including enterprise network equipment, industrial controllers, VoIP systems, cameras, storage, and environmental sensors.
 - **Parallel DNS Resolution**: Resolves PRTG hostnames and performs reverse DNS lookups with timeout handling.
+- **Multi-Device Tracking**: Outputs one row per PRTG device relationship (exploded format), enabling analysis when multiple PRTG devices monitor the same IP.
 - **Gap Analysis**: Reconciles PRTG data with scan results to find "Unmonitored" devices.
 - **Reporting**: Generates a CSV report with sales recommendations.
 - **Unit Tested**: Includes a comprehensive test suite for API and reconciliation logic.
+
+## CSV Output Columns
+
+| Column | Description |
+|--------|-------------|
+| IP Address | The IP address of the discovered device |
+| Hostname | Hostname from reverse DNS or PRTG device name |
+| Source | "PRTG & Scan" for managed, "Active Scan" for unmonitored |
+| MAC Address | MAC address (requires Layer 2 connectivity) |
+| Hardware Vendor | Identified vendor from SNMP/MAC lookup |
+| Hardware Model | Device model if identified |
+| OS Version | Operating system information |
+| Monitoring Status | "Managed" or "Unmonitored" |
+| PRTG Device Name | The device name in PRTG |
+| PRTG Device ID | The object ID in PRTG |
+| PRTG Device Count | Number of PRTG devices monitoring this IP |
+| Primary Match | "Yes" for first match, "No" for additional |
+| Sensor Count | Number of sensors on this PRTG device |
+| Recommendation | Action recommendation |
 
 ## Installation
 
