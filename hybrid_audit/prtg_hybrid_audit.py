@@ -9,7 +9,7 @@ Usage:
     python prtg_hybrid_audit.py
 """
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 
 import argparse
 import csv
@@ -81,13 +81,13 @@ class PRTGClient:
 
         # PRTG API to get devices
         # content=devices
-        # columns=objid,host,device,active,totalsens,sensor
+        # columns=objid,host,device,active,totalsens,totalsens_raw,sensor
 
         endpoint = f"{self.url}/api/table.json"
         params = {
             "content": "devices",
             "output": "json",
-            "columns": "objid,host,device,active,totalsens,sensor",
+            "columns": "objid,host,device,active,totalsens,totalsens_raw,sensor",
             "apitoken": self.apitoken,
         }
 
@@ -769,11 +769,18 @@ class ReconciliationEngine:
                 prtg_data = prtg_ip_to_device.get(ip, {})
                 row["Hostname"] = prtg_data.get("device", row["Hostname"])
 
-                # Parse sensor totals usually in format like "{'upsens': 5, 'downsens': 0, ...}"
-                # Use 'sensor' for a nice status summary, or fallback to 'totalsens'
-                row["Sensor Count"] = str(
-                    prtg_data.get("sensor", prtg_data.get("totalsens", "0"))
+                # Parse sensor totals - PRTG API returns values in multiple formats:
+                # - 'sensor': text summary like "5 Sensors (OK: 5)"
+                # - 'totalsens': formatted string or numeric
+                # - 'totalsens_raw': raw numeric value
+                # Check all possible keys to ensure we get the sensor count
+                sensor_count = (
+                    prtg_data.get("sensor")
+                    or prtg_data.get("totalsens")
+                    or prtg_data.get("totalsens_raw")
+                    or "0"
                 )
+                row["Sensor Count"] = str(sensor_count)
 
                 row["Recommendation"] = "Verify Sensors (Up/Down)"
 
