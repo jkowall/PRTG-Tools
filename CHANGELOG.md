@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-03
+
+### Added
+
+- **Hybrid Audit**: Expanded vendor detection from ~30 to ~80 vendors, covering:
+  - Enterprise network equipment (Extreme, Alcatel-Lucent/Nokia, Brocade, Meraki)
+  - Consumer/SMB networking (TP-Link, D-Link, NETGEAR, Zyxel, Linksys)
+  - VoIP/Telecom systems (Avaya, Mitel, Polycom, Yealink, Grandstream, AudioCodes)
+  - Additional camera vendors (Vivotek, Mobotix, Pelco, Uniview, Reolink, Amcrest)
+  - More storage systems (HPE Nimble, 3PAR, Hitachi, Buffalo, Drobo, TerraMaster)
+  - Environmental/Power equipment (Geist, Server Technology, CyberPower, Tripp Lite)
+  - Industrial sensors (ABB, Omron, Emerson, Honeywell, Keyence, IFM, Turck)
+  - Virtualization platforms (Proxmox, Nutanix, Hyper-V, XenServer, KVM)
+- **Hybrid Audit**: Added DNS logging with detailed debug output for reverse DNS lookups
+- **Hybrid Audit**: Added timeout handling for reverse DNS lookups to prevent hangs
+
+### Changed
+
+- **Hybrid Audit**: Refactored vendor detection into data-driven `_identify_vendor_from_snmp()` method to reduce code complexity (fix C901 linting error)
+- **Hybrid Audit**: Improved pattern matching with support for context-aware vendor detection (e.g., distinguishing Bosch cameras from other Bosch products)
+
+## [1.2.0] - 2026-02-02
+
+### Added
+
+- **Development**: Added `flake8` linting with `.flake8` configuration
+- **Development**: Added `black` code formatting support
+- **Development**: Added `pytest` unit testing framework with test suite in `tests/`
+- **Development**: Added `Makefile` with `lint`, `format`, `test`, and `verify` targets
+- **CI/CD**: Added GitHub Actions workflow (`.github/workflows/ci.yml`) for automated linting and testing on pull requests
+- **Hybrid Audit**: Added reverse DNS lookup for discovered devices
+- **Hybrid Audit**: Added parallel DNS resolution for PRTG hostnames
+
+### Changed
+
+- **Documentation**: Updated root `README.md` with development setup instructions
+- **Documentation**: Updated `hybrid_audit/README.md` with testing and linting info
+
 ## [1.1.2] - 2026-02-02
 
 ### Fixed
