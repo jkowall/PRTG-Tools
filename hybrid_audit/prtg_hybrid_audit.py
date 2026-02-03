@@ -9,7 +9,7 @@ Usage:
     python prtg_hybrid_audit.py
 """
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 import argparse
 import csv
@@ -240,11 +240,19 @@ class NetworkScanner:
 
     def _get_hostname(self, ip):
         """Resolves IP to hostname via Reverse DNS."""
+        # socket.gethostbyaddr() uses the global default timeout and can block
+        # for a long time on some systems. Temporarily set a reasonable timeout
+        # (matching other network operations) and then restore the original.
+        prev_timeout = socket.getdefaulttimeout()
         try:
+            socket.setdefaulttimeout(self.timeout)
             hostname, _, _ = socket.gethostbyaddr(ip)
             return hostname
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Reverse DNS lookup failed for {ip}: {e}")
             return ""
+        finally:
+            socket.setdefaulttimeout(prev_timeout)
 
     def _probe_snmp(self, ip, info):
         """Query SNMP sysDescr."""
@@ -271,19 +279,8 @@ class NetworkScanner:
 
                 info["os"] = f"SNMP Detected: {sys_descr[:50]}..."
 
-                # Heuristics
-                lower_descr = sys_descr.lower()
-                if "cisco" in lower_descr:
-                    info["vendor"] = "Cisco"
-                    info["model"] = "Network Device"
-                elif "linux" in lower_descr:
-                    info["vendor"] = "Linux Generic"
-                    info["os"] = "Linux"
-                elif "windows" in lower_descr:
-                    info["vendor"] = "Microsoft"
-                    info["os"] = "Windows"
-                elif "dell" in lower_descr:
-                    info["vendor"] = "Dell"
+                # Use data-driven vendor detection
+                self._identify_vendor_from_snmp(sys_descr, info)
 
                 logger.info(
                     f"SNMP Identification for {ip}: {info['vendor']} - {info['os']}"
@@ -292,6 +289,200 @@ class NetworkScanner:
         except Exception:
             # logger.debug(f"SNMP probe failed for {ip}: {e}")
             pass
+
+    def _identify_vendor_from_snmp(self, sys_descr, info):
+        """
+        Identify vendor/model/os from SNMP sysDescr using pattern matching.
+        Uses a data-driven approach to reduce complexity.
+        """
+        lower_descr = sys_descr.lower()
+
+        # Pattern definitions: (keywords, vendor, model, os_override)
+        # keywords can be a string or tuple of strings (any match)
+        # model and os_override can be None to skip setting
+        vendor_patterns = [
+            # Network Equipment
+            (("cisco",), "Cisco", "Network Device", None),
+            (("fortinet", "fortigate", "fortiswitch"), "Fortinet",
+             "Network/Security Device", None),
+            (("mikrotik", "routeros"), "MikroTik", "Network Device", None),
+            (("ubiquiti", "unifi", "edgeos"), "Ubiquiti", "Network Device", None),
+            (("aruba",), "HPE Aruba", "Network Device", None),
+            (("juniper",), "Juniper", "Network Device", None),
+            (("palo alto",), "Palo Alto Networks", "Firewall", None),
+            (("moxa",), "Moxa", "Industrial Network Device", None),
+            (("insys", "icom"), "Insys icom", "Industrial Router", None),
+            (("scalance",), "Siemens SCALANCE", "Industrial Network Device", None),
+            (("hirschmann",), "Hirschmann", "Industrial Switch", None),
+            # Storage Systems
+            (("netapp", "ontap", "data ontap"), "NetApp", "Storage System", "ONTAP"),
+            (("synology",), "Synology", "NAS", "DSM"),
+            (("qnap",), "QNAP", "NAS", None),
+            (("emc", "isilon"), "Dell EMC", "Storage System", None),
+            # Servers/OS
+            (("windows",), "Microsoft", None, "Windows"),
+            (("linux",), "Linux Generic", None, "Linux"),
+            (("vmware", "esxi"), "VMware", None, "ESXi"),
+            (("dell", "poweredge", "idrac"), "Dell", "Server", None),
+            (("lenovo", "thinkserver", "thinksystem"), "Lenovo", "Server", None),
+            (("hpe", "proliant", "ilo"), "HPE", "Server", None),
+            (("supermicro",), "Supermicro", "Server", None),
+            # Environmental/IoT Sensors
+            (("kentix",), "Kentix", "Environmental Sensor", None),
+            (("rittal",), "Rittal", "Environmental/PDU", None),
+            (("apc", "schneider"), "APC/Schneider Electric", "UPS/PDU", None),
+            (("eaton",), "Eaton", "UPS/PDU", None),
+            (("gude",), "Gude", "PDU/Sensor", None),
+            (("raritan",), "Raritan", "PDU/KVM", None),
+            (("vertiv", "liebert"), "Vertiv", "Cooling/UPS", None),
+            # Cameras/Security
+            (("axis",), "AXIS", "IP Camera", None),
+            (("hikvision",), "Hikvision", "IP Camera", None),
+            (("dahua",), "Dahua", "IP Camera", None),
+            (("hanwha", "wisenet"), "Hanwha/Wisenet", "IP Camera", None),
+            # Industrial/Automation
+            (("siemens", "simatic"), "Siemens", "Industrial Controller", None),
+            (("phoenix", "plcnext"), "Phoenix Contact", "Industrial Controller", None),
+            (("beckhoff",), "Beckhoff", "Industrial Controller", None),
+            (("rockwell", "allen-bradley"), "Rockwell/Allen-Bradley",
+             "Industrial Controller", None),
+            (("bender",), "Bender", "Power Monitoring", None),
+            (("wago",), "WAGO", "Industrial Controller", None),
+            # Printers
+            (("xerox",), "Xerox", "Printer", None),
+            (("epson",), "Epson", "Printer", None),
+            (("brother",), "Brother", "Printer", None),
+            (("kyocera",), "Kyocera", "Printer", None),
+            (("ricoh",), "Ricoh", "Printer", None),
+            (("lexmark",), "Lexmark", "Printer", None),
+            # Consumer/SMB Network Equipment
+            (("tp-link", "tplink"), "TP-Link", "Network Device", None),
+            (("d-link", "dlink"), "D-Link", "Network Device", None),
+            (("netgear",), "NETGEAR", "Network Device", None),
+            (("zyxel",), "Zyxel", "Network Device", None),
+            (("linksys",), "Linksys", "Network Device", None),
+            # Enterprise Network Equipment
+            (("extreme",), "Extreme Networks", "Network Device", None),
+            (("alcatel", "nokia"), "Alcatel-Lucent/Nokia", "Network Device", None),
+            (("brocade",), "Brocade", "Network/Storage Switch", None),
+            (("ruckus",), "Ruckus", "Wireless AP", None),
+            (("aerohive",), "Aerohive", "Wireless AP", None),
+            (("meraki",), "Cisco Meraki", "Network Device", None),
+            (("sonicwall",), "SonicWall", "Firewall", None),
+            (("watchguard",), "WatchGuard", "Firewall", None),
+            (("sophos",), "Sophos", "Firewall/Security", None),
+            (("barracuda",), "Barracuda", "Security Appliance", None),
+            (("f5", "big-ip"), "F5", "Load Balancer", None),
+            (("a10",), "A10 Networks", "Load Balancer", None),
+            # VoIP/Telecom
+            (("avaya",), "Avaya", "VoIP/Phone System", None),
+            (("mitel",), "Mitel", "VoIP/Phone System", None),
+            (("polycom", "poly"), "Polycom/Poly", "VoIP Phone/Conference", None),
+            (("yealink",), "Yealink", "VoIP Phone", None),
+            (("grandstream",), "Grandstream", "VoIP Phone", None),
+            (("snom",), "Snom", "VoIP Phone", None),
+            (("audiocodes",), "AudioCodes", "VoIP Gateway", None),
+            (("asterisk", "freepbx"), "Asterisk/FreePBX", "PBX Server", None),
+            # More Storage
+            (("nimble",), "HPE Nimble", "Storage", None),
+            (("3par",), "HPE 3PAR", "Storage", None),
+            (("hitachi",), "Hitachi", "Storage System", None),
+            (("buffalo",), "Buffalo", "NAS", None),
+            (("drobo",), "Drobo", "NAS", None),
+            (("asustor",), "Asustor", "NAS", None),
+            (("terramaster",), "TerraMaster", "NAS", None),
+            # More Cameras
+            (("vivotek",), "Vivotek", "IP Camera", None),
+            (("mobotix",), "Mobotix", "IP Camera", None),
+            (("pelco",), "Pelco", "IP Camera", None),
+            (("uniview",), "Uniview", "IP Camera", None),
+            (("geovision",), "GeoVision", "IP Camera", None),
+            (("foscam",), "Foscam", "IP Camera", None),
+            (("reolink",), "Reolink", "IP Camera", None),
+            (("amcrest",), "Amcrest", "IP Camera", None),
+            # More Environmental/Power
+            (("geist",), "Geist", "PDU/Environmental", None),
+            (("servertech", "server technology"), "Server Technology", "PDU", None),
+            (("cyberpower",), "CyberPower", "UPS/PDU", None),
+            (("tripp", "tripplite"), "Tripp Lite", "UPS/PDU", None),
+            (("paessler", "prtg"), "Paessler", "PRTG Probe", None),
+            (("digi",), "Digi International", "Serial/IoT Gateway", None),
+            (("advantech",), "Advantech", "Industrial IoT", None),
+            # Virtualization/Hypervisors
+            (("proxmox",), "Proxmox", None, "Proxmox VE"),
+            (("nutanix",), "Nutanix", "HCI", None),
+            (("hyper-v",), "Microsoft", None, "Hyper-V"),
+            # More Industrial/Automation
+            (("abb",), "ABB", "Industrial Controller", None),
+            (("omron",), "Omron", "Industrial Controller", None),
+            (("emerson",), "Emerson", "Industrial Controller", None),
+            (("honeywell",), "Honeywell", "Industrial/Building", None),
+            (("keyence",), "Keyence", "Industrial Sensor/Controller", None),
+            (("ifm",), "IFM", "Industrial Sensor", None),
+            (("pepperl", "fuchs"), "Pepperl+Fuchs", "Industrial Sensor", None),
+            (("balluff",), "Balluff", "Industrial Sensor", None),
+            (("turck",), "Turck", "Industrial Sensor", None),
+        ]
+
+        # Patterns requiring additional context checks
+        special_patterns = [
+            # Bosch camera needs camera/dinion context
+            (("bosch",), ("camera", "dinion"), "Bosch", "IP Camera", None),
+            # HP printer needs printer context
+            (("hp",), ("printer", "laserjet", "officejet"), "HP", "Printer", None),
+            # Canon printer needs print context
+            (("canon",), ("print",), "Canon", "Printer", None),
+            # ASUS network needs router/switch context
+            (("asus",), ("router", "switch"), "ASUS", "Network Device", None),
+            # Citrix ADC needs netscaler/adc context
+            (("citrix",), ("netscaler", "adc"), "Citrix", "Load Balancer", None),
+            # XenServer needs server context
+            (("xen",), ("server",), "Citrix", None, "XenServer"),
+            # KVM needs qemu/libvirt context
+            (("kvm",), ("qemu", "libvirt"), "Linux", None, "KVM"),
+            # Pure Storage needs storage context
+            (("pure",), ("storage",), "Pure Storage", "Flash Array", None),
+            # IBM storage needs storage context
+            (("ibm",), ("storage", "storwize", "flashsystem"), "IBM",
+             "Storage System", None),
+            # Schneider PLC needs modicon/plc context
+            (("schneider",), ("modicon", "plc"), "Schneider Electric",
+             "Industrial Controller", None),
+            # Mitsubishi PLC needs plc/melsec context
+            (("mitsubishi",), ("plc", "melsec"), "Mitsubishi",
+             "Industrial Controller", None),
+            # SICK sensor needs sensor/scanner context
+            (("sick",), ("sensor", "scanner"), "SICK", "Industrial Sensor", None),
+            # Banner sensor needs engineering context
+            (("banner",), ("engineering",), "Banner Engineering",
+             "Industrial Sensor", None),
+            # Konica Minolta
+            (("konica", "minolta"), (), "Konica Minolta", "Printer", None),
+            # Cisco phone needs phone/cp- context
+            (("cisco",), ("phone", "cp-"), "Cisco", "VoIP Phone", None),
+        ]
+
+        # Check simple patterns first
+        for keywords, vendor, model, os_override in vendor_patterns:
+            if any(kw in lower_descr for kw in keywords):
+                info["vendor"] = vendor
+                if model:
+                    info["model"] = model
+                if os_override:
+                    info["os"] = os_override
+                return
+
+        # Check patterns requiring additional context
+        for primary_kw, context_kw, vendor, model, os_override in special_patterns:
+            if any(pk in lower_descr for pk in primary_kw):
+                # Empty context means just primary match is enough
+                if not context_kw or any(ck in lower_descr for ck in context_kw):
+                    info["vendor"] = vendor
+                    if model:
+                        info["model"] = model
+                    if os_override:
+                        info["os"] = os_override
+                    return
 
     def _probe_ssh(self, ip, info):
         """Query via SSH."""
@@ -515,6 +706,7 @@ class ReconciliationEngine:
                 fqdns_to_resolve.append(host_key)
 
         # Batch Parallel DNS Resolution
+        failed_resolutions = []
         if fqdns_to_resolve:
             logger.info(
                 f"Resolving {len(fqdns_to_resolve)} PRTG hostnames in parallel..."
@@ -535,11 +727,23 @@ class ReconciliationEngine:
                             prtg_ips.add(resolved_ip)
                             # Link to device data
                             prtg_ip_to_device[resolved_ip] = prtg_devices[fqdn]
+                        else:
+                            # DNS resolution failed for this hostname
+                            failed_resolutions.append(fqdn)
+                            logger.warning(f"DNS resolution failed for PRTG device: {fqdn}")
                     except Exception as e:
-                        logger.debug(f"Error in future resolution for {fqdn}: {e}")
+                        failed_resolutions.append(fqdn)
+                        logger.warning(f"DNS resolution error for {fqdn}: {e}")
 
+        # Log summary of resolution results
+        if failed_resolutions:
+            logger.warning(
+                f"Failed to resolve {len(failed_resolutions)} PRTG hostnames - "
+                f"these devices may appear as 'Unmonitored' even if they exist in PRTG!"
+            )
         logger.info(
-            f"PRTG devices: {len(prtg_devices)} total, {len(prtg_ips)} resolved to IPs"
+            f"PRTG devices: {len(prtg_devices)} total, {len(prtg_ips)} resolved to IPs, "
+            f"{len(failed_resolutions)} failed DNS resolution"
         )
 
         for host in scan_results:
