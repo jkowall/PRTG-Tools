@@ -301,8 +301,7 @@ class NetworkScanner:
         # keywords can be a string or tuple of strings (any match)
         # model and os_override can be None to skip setting
         vendor_patterns = [
-            # Network Equipment
-            (("cisco",), "Cisco", "Network Device", None),
+            # Network Equipment - More specific patterns first
             (("fortinet", "fortigate", "fortiswitch"), "Fortinet",
              "Network/Security Device", None),
             (("mikrotik", "routeros"), "MikroTik", "Network Device", None),
@@ -311,7 +310,7 @@ class NetworkScanner:
             (("juniper",), "Juniper", "Network Device", None),
             (("palo alto",), "Palo Alto Networks", "Firewall", None),
             (("moxa",), "Moxa", "Industrial Network Device", None),
-            (("insys", "icom"), "Insys icom", "Industrial Router", None),
+            # Industrial Network - More specific before generic Siemens
             (("scalance",), "Siemens SCALANCE", "Industrial Network Device", None),
             (("hirschmann",), "Hirschmann", "Industrial Switch", None),
             # Storage Systems
@@ -330,18 +329,17 @@ class NetworkScanner:
             # Environmental/IoT Sensors
             (("kentix",), "Kentix", "Environmental Sensor", None),
             (("rittal",), "Rittal", "Environmental/PDU", None),
-            (("apc", "schneider"), "APC/Schneider Electric", "UPS/PDU", None),
+            (("apc",), "APC/Schneider Electric", "UPS/PDU", None),
             (("eaton",), "Eaton", "UPS/PDU", None),
             (("gude",), "Gude", "PDU/Sensor", None),
             (("raritan",), "Raritan", "PDU/KVM", None),
             (("vertiv", "liebert"), "Vertiv", "Cooling/UPS", None),
             # Cameras/Security
-            (("axis",), "AXIS", "IP Camera", None),
             (("hikvision",), "Hikvision", "IP Camera", None),
             (("dahua",), "Dahua", "IP Camera", None),
             (("hanwha", "wisenet"), "Hanwha/Wisenet", "IP Camera", None),
-            # Industrial/Automation
-            (("siemens", "simatic"), "Siemens", "Industrial Controller", None),
+            # Industrial/Automation - More specific before generic
+            (("simatic",), "Siemens", "Industrial Controller", None),
             (("phoenix", "plcnext"), "Phoenix Contact", "Industrial Controller", None),
             (("beckhoff",), "Beckhoff", "Industrial Controller", None),
             (("rockwell", "allen-bradley"), "Rockwell/Allen-Bradley",
@@ -362,8 +360,8 @@ class NetworkScanner:
             (("zyxel",), "Zyxel", "Network Device", None),
             (("linksys",), "Linksys", "Network Device", None),
             # Enterprise Network Equipment
-            (("extreme",), "Extreme Networks", "Network Device", None),
-            (("alcatel", "nokia"), "Alcatel-Lucent/Nokia", "Network Device", None),
+            (("alcatel", "lucent"), "Alcatel-Lucent/Nokia", "Network Device", None),
+            (("extreme networks",), "Extreme Networks", "Network Device", None),
             (("brocade",), "Brocade", "Network/Storage Switch", None),
             (("ruckus",), "Ruckus", "Wireless AP", None),
             (("aerohive",), "Aerohive", "Wireless AP", None),
@@ -372,20 +370,27 @@ class NetworkScanner:
             (("watchguard",), "WatchGuard", "Firewall", None),
             (("sophos",), "Sophos", "Firewall/Security", None),
             (("barracuda",), "Barracuda", "Security Appliance", None),
-            (("f5", "big-ip"), "F5", "Load Balancer", None),
-            (("a10",), "A10 Networks", "Load Balancer", None),
             # VoIP/Telecom
             (("avaya",), "Avaya", "VoIP/Phone System", None),
             (("mitel",), "Mitel", "VoIP/Phone System", None),
-            (("polycom", "poly"), "Polycom/Poly", "VoIP Phone/Conference", None),
+            (("polycom",), "Polycom/Poly", "VoIP Phone/Conference", None),
             (("yealink",), "Yealink", "VoIP Phone", None),
             (("grandstream",), "Grandstream", "VoIP Phone", None),
             (("snom",), "Snom", "VoIP Phone", None),
             (("audiocodes",), "AudioCodes", "VoIP Gateway", None),
             (("asterisk", "freepbx"), "Asterisk/FreePBX", "PBX Server", None),
+            # Load Balancers - specific patterns
+            (("big-ip",), "F5", "Load Balancer", None),
+            (("f5 ",), "F5", "Load Balancer", None),
+            (("f5-",), "F5", "Load Balancer", None),
+            (("a10 networks",), "A10 Networks", "Load Balancer", None),
+            (("a10 ",), "A10 Networks", "Load Balancer", None),
+            (("a10-",), "A10 Networks", "Load Balancer", None),
             # More Storage
             (("nimble",), "HPE Nimble", "Storage", None),
             (("3par",), "HPE 3PAR", "Storage", None),
+            (("pure storage",), "Pure Storage", "Flash Array", None),
+            (("purestorage",), "Pure Storage", "Flash Array", None),
             (("hitachi",), "Hitachi", "Storage System", None),
             (("buffalo",), "Buffalo", "NAS", None),
             (("drobo",), "Drobo", "NAS", None),
@@ -406,26 +411,33 @@ class NetworkScanner:
             (("cyberpower",), "CyberPower", "UPS/PDU", None),
             (("tripp", "tripplite"), "Tripp Lite", "UPS/PDU", None),
             (("paessler", "prtg"), "Paessler", "PRTG Probe", None),
-            (("digi",), "Digi International", "Serial/IoT Gateway", None),
+            (("digi international",), "Digi International", "Serial/IoT Gateway", None),
+            ((" digi ",), "Digi International", "Serial/IoT Gateway", None),
             (("advantech",), "Advantech", "Industrial IoT", None),
             # Virtualization/Hypervisors
             (("proxmox",), "Proxmox", None, "Proxmox VE"),
             (("nutanix",), "Nutanix", "HCI", None),
             (("hyper-v",), "Microsoft", None, "Hyper-V"),
             # More Industrial/Automation
-            (("abb",), "ABB", "Industrial Controller", None),
             (("omron",), "Omron", "Industrial Controller", None),
             (("emerson",), "Emerson", "Industrial Controller", None),
             (("honeywell",), "Honeywell", "Industrial/Building", None),
             (("keyence",), "Keyence", "Industrial Sensor/Controller", None),
-            (("ifm",), "IFM", "Industrial Sensor", None),
             (("pepperl", "fuchs"), "Pepperl+Fuchs", "Industrial Sensor", None),
             (("balluff",), "Balluff", "Industrial Sensor", None),
             (("turck",), "Turck", "Industrial Sensor", None),
+            (("banner engineering",), "Banner Engineering", "Industrial Sensor", None),
+            # Generic Cisco must come after more specific Cisco patterns
+            (("cisco",), "Cisco", "Network Device", None),
+            # Generic Siemens must come after SCALANCE and SIMATIC
+            (("siemens",), "Siemens", "Industrial Controller", None),
         ]
 
         # Patterns requiring additional context checks
+        # Format: (primary_keywords, context_keywords, vendor, model, os_override)
         special_patterns = [
+            # More specific Insys icom - require both keywords
+            (("icom",), ("insys",), "Insys icom", "Industrial Router", None),
             # Bosch camera needs camera/dinion context
             (("bosch",), ("camera", "dinion"), "Bosch", "IP Camera", None),
             # HP printer needs printer context
@@ -438,41 +450,46 @@ class NetworkScanner:
             (("citrix",), ("netscaler", "adc"), "Citrix", "Load Balancer", None),
             # XenServer needs server context
             (("xen",), ("server",), "Citrix", None, "XenServer"),
-            # KVM needs qemu/libvirt context
+            # KVM switch needs switch/console/vendor context to avoid KVM hypervisor match
+            (("kvm",), ("switch", "console", "raritan", "aten", "avocent", "startech"),
+             "KVM Switch", "KVM Switch", None),
+            # KVM hypervisor needs qemu/libvirt context
             (("kvm",), ("qemu", "libvirt"), "Linux", None, "KVM"),
-            # Pure Storage needs storage context
-            (("pure",), ("storage",), "Pure Storage", "Flash Array", None),
             # IBM storage needs storage context
             (("ibm",), ("storage", "storwize", "flashsystem"), "IBM",
              "Storage System", None),
-            # Schneider PLC needs modicon/plc context
+            # Schneider PLC needs modicon/plc context (checked before generic Schneider/APC)
             (("schneider",), ("modicon", "plc"), "Schneider Electric",
              "Industrial Controller", None),
             # Mitsubishi PLC needs plc/melsec context
             (("mitsubishi",), ("plc", "melsec"), "Mitsubishi",
              "Industrial Controller", None),
-            # SICK sensor needs sensor/scanner context
-            (("sick",), ("sensor", "scanner"), "SICK", "Industrial Sensor", None),
-            # Banner sensor needs engineering context
-            (("banner",), ("engineering",), "Banner Engineering",
-             "Industrial Sensor", None),
+            # SICK sensor needs sensor/scanner context + specific SICK identifiers
+            (("sick",), ("sensor", "scanner", "sick ag", "lms", "tim", "mrs"),
+             "SICK", "Industrial Sensor", None),
             # Konica Minolta
             (("konica", "minolta"), (), "Konica Minolta", "Printer", None),
-            # Cisco phone needs phone/cp- context
+            # Cisco phone needs phone/cp- context (checked before generic Cisco)
             (("cisco",), ("phone", "cp-"), "Cisco", "VoIP Phone", None),
+            # AXIS camera - more specific with camera context
+            (("axis",), ("camera", "communications"),
+             "AXIS", "IP Camera", None),
+            # Nokia network equipment - require network context
+            (("nokia",), ("router", "switch", "firewall", "ap", "access point",
+                         "wifi", "lan", "wan", "ethernet", "network"),
+             "Alcatel-Lucent/Nokia", "Network Device", None),
+            # Poly VoIP - require phone/conference context
+            (("poly",), ("phone", "conference"), "Polycom/Poly",
+             "VoIP Phone/Conference", None),
+            # ABB industrial - require controller/automation context
+            (("abb",), ("controller", "automation", "drive", "plc", "hmi"),
+             "ABB", "Industrial Controller", None),
+            # IFM sensor - require sensor context
+            (("ifm",), ("sensor", "io-link", "automation"), "IFM",
+             "Industrial Sensor", None),
         ]
 
-        # Check simple patterns first
-        for keywords, vendor, model, os_override in vendor_patterns:
-            if any(kw in lower_descr for kw in keywords):
-                info["vendor"] = vendor
-                if model:
-                    info["model"] = model
-                if os_override:
-                    info["os"] = os_override
-                return
-
-        # Check patterns requiring additional context
+        # Check patterns requiring additional context FIRST (more specific)
         for primary_kw, context_kw, vendor, model, os_override in special_patterns:
             if any(pk in lower_descr for pk in primary_kw):
                 # Empty context means just primary match is enough
@@ -483,6 +500,16 @@ class NetworkScanner:
                     if os_override:
                         info["os"] = os_override
                     return
+
+        # Check simple patterns second (less specific)
+        for keywords, vendor, model, os_override in vendor_patterns:
+            if any(kw in lower_descr for kw in keywords):
+                info["vendor"] = vendor
+                if model:
+                    info["model"] = model
+                if os_override:
+                    info["os"] = os_override
+                return
 
     def _probe_ssh(self, ip, info):
         """Query via SSH."""
