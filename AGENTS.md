@@ -34,7 +34,71 @@ This repository contains tools for PRTG Network Monitor users, including securit
 - Review all code changes for security implications
 - Follow secure coding practices for network tools
 
-## Testing
+## Development Setup
+
+Before making changes, set up your development environment:
+
+```bash
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On macOS/Linux
+# Or: .venv\Scripts\activate  # On Windows
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+## Code Quality Tools
+
+This repository uses the following tools for code quality:
+
+- **flake8**: Linting and style checking (configuration in `.flake8`)
+- **black**: Code formatting
+- **pytest**: Unit testing framework
+
+Use the Makefile targets to run these tools:
+
+```bash
+make lint      # Run flake8 to check code style
+make format    # Run black to format code
+make test      # Run pytest for unit tests
+make verify    # Run both linting and tests
+```
+
+## Verification Requirements
+
+**Before committing any changes, you MUST run verification:**
+
+```bash
+make verify
+```
+
+This runs both linting and unit tests. **All checks must pass before committing.**
+
+### Pre-Commit Checklist
+
+1. Run `make format` to auto-format code
+2. Run `make verify` to ensure linting and tests pass
+3. Fix any linting errors or test failures
+4. Only then commit your changes
+
+### Writing Tests
+
+- Add unit tests for new functionality in the `tests/` directory
+- Follow existing test patterns in `tests/test_hybrid_audit.py`
+- Mock external dependencies (PRTG API, network calls)
+- Aim for meaningful test coverage of critical paths
+
+## CI/CD Integration
+
+GitHub Actions automatically runs on all pull requests:
+
+- **Linting**: `flake8` checks code style
+- **Tests**: `pytest` runs unit tests
+
+PRs cannot be merged if CI checks fail. See `.github/workflows/ci.yml` for the workflow configuration.
+
+## Testing Guidelines
 
 - Test scripts against non-production networks only
 - Verify changes don't break existing functionality
