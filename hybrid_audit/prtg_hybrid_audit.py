@@ -240,11 +240,19 @@ class NetworkScanner:
 
     def _get_hostname(self, ip):
         """Resolves IP to hostname via Reverse DNS."""
+        # socket.gethostbyaddr() uses the global default timeout and can block
+        # for a long time on some systems. Temporarily set a reasonable timeout
+        # (matching other network operations) and then restore the original.
+        prev_timeout = socket.getdefaulttimeout()
         try:
+            socket.setdefaulttimeout(self.timeout)
             hostname, _, _ = socket.gethostbyaddr(ip)
             return hostname
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Reverse DNS lookup failed for {ip}: {e}")
             return ""
+        finally:
+            socket.setdefaulttimeout(prev_timeout)
 
     def _probe_snmp(self, ip, info):
         """Query SNMP sysDescr."""
